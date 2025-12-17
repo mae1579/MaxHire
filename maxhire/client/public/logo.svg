@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40" fill="none">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&amp;display=swap');
+    </style>
+  </defs>
+  <path d="M8 19V12L20 5L32 12V19" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32 21V28L20 35L8 28V21L20 28L32 21Z" fill="#f4f4f5"/>
+  <text x="48" y="29" fill="#f4f4f5" style="font-family: 'Poppins', sans-serif; font-weight: 700; letter-spacing: -1px; font-size: 25px;">MaxHire</text>
+</svg>
