@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const registerRouter = new Router();
 
 registerRouter.post("/", async (req, res) => {
-  const { email, password, role, name, surname, phone } = req.body;
+  const { email, password, name, surname, phone } = req.body;
   let user = await UserRecord.findOneByEmail(email);
   if (user !== null) {
     return res
@@ -21,7 +21,7 @@ registerRouter.post("/", async (req, res) => {
   user = await new UserRecord({
     email,
     password: hashedPassword,
-    role,
+    role: "user",
     name,
     surname,
     phone,
