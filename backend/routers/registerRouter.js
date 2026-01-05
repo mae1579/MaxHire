@@ -16,7 +16,6 @@ registerRouter.post("/", async (req, res) => {
     password,
     Number(process.env.BCRYPT_SALT),
   );
-  console.log(hashedPassword);
 
   user = await new UserRecord({
     email,

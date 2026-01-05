@@ -30,7 +30,7 @@ class UserRecord {
   }
 
   async insert() {
-    const result = await pool.execute(
+     await pool.execute(
       "INSERT INTO `users` (`id`, `email`, `password`, `role`, `name`, `surname`, `phone`) VALUES (:id,:email, :password, :role, :name, :surname, :phone)",
       {
         id: this.id,
