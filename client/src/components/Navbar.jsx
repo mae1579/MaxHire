@@ -45,6 +45,12 @@ const Navbar = () => {
           Strona główna
         </Link>
         <Link
+          to="/browse"
+          className="cursor-pointer text-zinc-400 hover:text-white transition-colors font-medium"
+        >
+          Przeglądaj
+        </Link>
+        <Link
           to="/contact"
           className="cursor-pointer text-zinc-400 hover:text-white transition-colors font-medium"
         >

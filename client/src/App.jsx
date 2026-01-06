@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Browse from "./pages/Browse";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 const App = () => {
@@ -21,6 +22,12 @@ const App = () => {
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/browse"
+          element={
+            <Browse />
           }
         />
         <Route
