@@ -103,6 +103,13 @@ const Navbar = () => {
           Strona główna
         </Link>
         <Link
+          to="/browse"
+          onClick={() => setOpen(false)}
+          className="block text-zinc-300 hover:text-white font-medium py-2"
+        >
+          Przeglądaj
+        </Link>
+        <Link
           to="/contact"
           onClick={() => setOpen(false)}
           className="block text-zinc-300 hover:text-white font-medium py-2"
