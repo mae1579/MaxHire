@@ -50,15 +50,20 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` varchar(55) NOT NULL,
   `surname` varchar(55) NOT NULL,
   `phone` varchar(9) DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Zrzucanie danych dla tabeli storemax.users: ~4 rows (około)
-INSERT INTO `users` (`id`, `email`, `password`, `role`, `name`, `surname`, `phone`) VALUES
-	('2638e05d-64e0-4040-88d2-2aa10cd67501', 'Milkigmail@.com', '$2b$10$pzoOdtzHGTz7UZNL./iSE.4f6cuDvSL6yEvOGOG8kBKijov41vQPe', 'user', 'Mario', 'Creed', NULL),
-	('a0277004-f8b6-4d95-871f-4959e0451753', 'hell@gmail.com', '$2b$10$edd5TsthV1G196tmdHbwwu4eWiuP658VRZWxtEkHv8ZITCOGhBGfi', 'user', 'John', 'Hell', NULL),
-	('bc197781-5fce-42b9-aad6-10591e639771', 'kowalski@wp.pl', '$2b$10$y27Yghrct7FhplUr3M2wO.Onm/Ngr/J.53/z9aG3wlOy9wzZjZ4Se', 'user', 'Adam', 'Nowak', NULL),
-	('e11ac16f-a76c-4cda-a3d2-8cebd0cbef83', 'janek@gmail.com', '$2b$10$y27Yghrct7FhplUr3M2wO.Onm/Ngr/J.53/z9aG3wlOy9wzZjZ4Se', 'user', 'Janek', 'Nowak', NULL);
+-- Zrzucanie danych dla tabeli storemax.users: ~8 rows (około)
+INSERT INTO `users` (`id`, `email`, `password`, `role`, `name`, `surname`, `phone`, `photo`) VALUES
+	('2638e05d-64e0-4040-88d2-2aa10cd67501', 'Milkigmail@.com', '$2b$10$pzoOdtzHGTz7UZNL./iSE.4f6cuDvSL6yEvOGOG8kBKijov41vQPe', 'user', 'Mario', 'Creed', NULL, NULL),
+	('483c5e36-d237-4b10-9ea5-8103b55d3e05', 'moon@gmail.com', '$2b$10$uavRx4rMnJmyGobeqptkpez.VJEpW4bkHUeM1azQIEraf7h79aEre', 'user', 'Jacard', 'Moon', NULL, NULL),
+	('5d2c4420-78af-41ab-bff0-e7d711463b98', 'KOLEK@gmail.com', '$2b$10$C7pGbWGhKwMba.L2znTt1eGKAf7e7yrNhFkrnxEz5kdFvkV3uQktm', 'user', 'Jacard', 'Moon', NULL, 'https:.pl'),
+	('a0277004-f8b6-4d95-871f-4959e0451753', 'hell@gmail.com', '$2b$10$edd5TsthV1G196tmdHbwwu4eWiuP658VRZWxtEkHv8ZITCOGhBGfi', 'user', 'John', 'Hell', NULL, 'https://res.cloudinary.com/dp8o4hppt/image/upload/v1768008026/ProfilePhoto/vexjqgshmtdwrds9bgkq.jpg'),
+	('b79fa00b-6652-4f77-90b2-8dd933f9ec80', 'kamil@wp.pl', '$2b$10$8uzrDSp4luTeZiKsBkGb/e4TKRg.bdBLwN9irPbpmLEW9qs0/CKMe', 'user', 'Jacard', 'Moon', NULL, 'https://res.cloudinary.com/dp8o4hppt/image/upload/v1768008486/ProfilePhoto/tw7v5btvlulcqj4tlpus.jpg'),
+	('bc197781-5fce-42b9-aad6-10591e639771', 'kowalski@wp.pl', '$2b$10$y27Yghrct7FhplUr3M2wO.Onm/Ngr/J.53/z9aG3wlOy9wzZjZ4Se', 'user', 'Adam', 'Nowak', NULL, NULL),
+	('e11ac16f-a76c-4cda-a3d2-8cebd0cbef83', 'janek@gmail.com', '$2b$10$y27Yghrct7FhplUr3M2wO.Onm/Ngr/J.53/z9aG3wlOy9wzZjZ4Se', 'user', 'Janek', 'Nowak', NULL, NULL),
+	('fb2f6f95-ea70-4d08-8939-bc3b8a91de71', 'm@gmail.com', '$2b$10$ksCVQDKYGN2gGFm/h75/melSEjukB4LI4Dvnxaa2L5XsYUx2lRX.u', 'user', 'Jacard', 'Moon', NULL, NULL);
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

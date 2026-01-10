@@ -5,7 +5,6 @@ const addOfferRouter = express.Router();
 
 addOfferRouter.post("/", tokenAuth, async (req, res) => {
   const { id: user_id } = req.user;
-  console.log(req.body);
   const offer = await new OfferRecord({
     ...req.body,
     tech: JSON.stringify(req.body.tech),

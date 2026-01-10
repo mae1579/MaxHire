@@ -11,7 +11,8 @@ class UserRecord {
       role = "user",
       name,
       surname,
-      phone = null,
+      phone,
+      photo,
     } = obj;
 
     this.id = id ?? uuid();
@@ -20,7 +21,8 @@ class UserRecord {
     this.role = role ?? "user";
     this.name = name;
     this.surname = surname;
-    this.phone = phone;
+    this.phone = phone ? photo : null;
+    this.photo = photo ? photo : null;
 
     // Wykonac walidację pól !
 
@@ -30,8 +32,8 @@ class UserRecord {
   }
 
   async insert() {
-     await pool.execute(
-      "INSERT INTO `users` (`id`, `email`, `password`, `role`, `name`, `surname`, `phone`) VALUES (:id,:email, :password, :role, :name, :surname, :phone)",
+    await pool.execute(
+      "INSERT INTO `users` (`id`, `email`, `password`, `role`, `name`, `surname`, `phone`, `photo`) VALUES (:id,:email, :password, :role, :name, :surname, :phone, :photo)",
       {
         id: this.id,
         email: this.email,
@@ -40,9 +42,17 @@ class UserRecord {
         name: this.name,
         surname: this.surname,
         phone: this.phone,
+        photo: this.photo,
       },
     );
     return this.id;
+  }
+
+  static async updateProfilePhoto(userid, photo) {
+    await pool.execute("UPDATE `users` SET `photo` = :photo WHERE `id` = :id", {
+      photo: photo,
+      id: userid,
+    });
   }
 
   async delete(id) {

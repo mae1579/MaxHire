@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const registerRouter = new Router();
 
 registerRouter.post("/", async (req, res) => {
-  const { email, password, name, surname, phone } = req.body;
+  const { email, password, name, surname, phone, photo } = req.body;
   let user = await UserRecord.findOneByEmail(email);
   if (user !== null) {
     return res
@@ -24,6 +24,7 @@ registerRouter.post("/", async (req, res) => {
     name,
     surname,
     phone,
+    photo,
   });
   await user.insert();
   res.status(201).send(`Dodano użytkownika o numerze id: ${user.id}`);
