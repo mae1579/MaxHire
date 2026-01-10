@@ -50,6 +50,17 @@ class OfferRecord {
     );
     return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
   }
+
+  static async getOneOffer(user_id) {
+    const [data] = await pool.execute(
+      "SELECT `users`.`email`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `offers`.`id` = :id",
+
+      {
+        id: user_id,
+      },
+    );
+    return data.length === 0 ? null : data;
+  }
 }
 
 module.exports = {
