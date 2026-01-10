@@ -3,8 +3,11 @@ import Navbar from "./components/Navbar";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Browse from "./pages/Browse";
+import Contact from "./pages/Contact";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 const App = () => {
   const { user } = useAuth();
   return (
@@ -21,6 +24,18 @@ const App = () => {
             <ProtectedRoute>
               <Home />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/browse"
+          element={
+            <Browse />
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <Contact />
           }
         />
         <Route
