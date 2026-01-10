@@ -11,6 +11,7 @@ const { logoutRouter } = require("./routers/logoutRouter");
 const { addOfferRouter } = require("./routers/addOfferRouter");
 const { offersRouter } = require("./routers/offersRouter");
 const { photoUploadRouter } = require("./routers/photoUploadRouter");
+const { offerRouter } = require("./routers/offerRouter");
 
 const app = express();
 app.use(
@@ -33,6 +34,7 @@ app.use("/homeUser", homeRouterUser);
 app.use("/logout", logoutRouter);
 app.use("/addOffer", addOfferRouter);
 app.use("/offers", offersRouter);
+app.use("/offer", offerRouter);
 app.use("/upload", photoUploadRouter);
 
 app.use(handleError);

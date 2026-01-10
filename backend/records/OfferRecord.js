@@ -40,6 +40,16 @@ class OfferRecord {
     const [data] = await pool.execute("SELECT * FROM `offers` ");
     return data.map((elem) => new OfferRecord(elem));
   }
+
+  static async findOneByUserId(user_id) {
+    const [data] = await pool.execute(
+      "SELECT * FROM `offers` WHERE `user_id` = :id",
+      {
+        id: user_id,
+      },
+    );
+    return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
+  }
 }
 
 module.exports = {
