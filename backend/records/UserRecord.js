@@ -21,7 +21,7 @@ class UserRecord {
     this.role = role ?? "user";
     this.name = name;
     this.surname = surname;
-    this.phone = phone ? photo : null;
+    this.phone = phone ? phone : null;
     this.photo = photo ? photo : null;
 
     // Wykonac walidację pól !
@@ -46,6 +46,22 @@ class UserRecord {
       },
     );
     return this.id;
+  }
+
+  async update() {
+    await pool.execute(
+      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo WHERE `id`=:id",
+      {
+        id: this.id,
+        email: this.email,
+        password: this.password,
+        role: this.role,
+        name: this.name,
+        surname: this.surname,
+        phone: this.phone,
+        photo: this.photo,
+      },
+    );
   }
 
   static async updateProfilePhoto(userid, photo) {

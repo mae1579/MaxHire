@@ -38,7 +38,7 @@ class OfferRecord {
 
   static async findAll() {
     const [data] = await pool.execute("SELECT * FROM `offers` ");
-    return data.map((elem) => new OfferRecord(elem));
+    return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
   }
 
   static async findOneByUserId(user_id) {

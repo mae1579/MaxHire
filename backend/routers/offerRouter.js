@@ -16,7 +16,7 @@ offerRouter.get("/userOffer", tokenAuth, async (req, res) => {
   res.status(200).json({ message: data });
 });
 //Wyswietlenie jednej konkretnej oferty
-offerRouter.get("/getOffer/:id", async (req, res) => {
+offerRouter.get("/getOffer/:id", tokenAuth, async (req, res) => {
   const data = await OfferRecord.getOneOffer(req.params.id);
   if (!data) {
     throw new ValidationError("Zgloszenie nie istnieje !");

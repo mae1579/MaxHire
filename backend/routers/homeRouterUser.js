@@ -1,6 +1,8 @@
 const express = require("express");
 const { UserRecord } = require("../records/UserRecord");
 const tokenAuth = require("../guards/authGuard");
+const { transporter } = require("../utils/gmailconfig");
+const { mailOptions } = require("../utils/szablonPassword");
 
 const homeRouterUser = express.Router();
 

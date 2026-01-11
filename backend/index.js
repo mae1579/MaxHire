@@ -12,6 +12,7 @@ const { addOfferRouter } = require("./routers/addOfferRouter");
 const { offersRouter } = require("./routers/offersRouter");
 const { photoUploadRouter } = require("./routers/photoUploadRouter");
 const { offerRouter } = require("./routers/offerRouter");
+const { editUserRouter } = require("./routers/editUserRouter");
 
 const app = express();
 app.use(
@@ -31,12 +32,12 @@ app.use(cookieParser());
 app.use("/register", registerRouter);
 app.use("/login", loginRouter);
 app.use("/homeUser", homeRouterUser);
+app.use("/edit/user", editUserRouter);
 app.use("/logout", logoutRouter);
 app.use("/addOffer", addOfferRouter);
 app.use("/offers", offersRouter);
 app.use("/offer", offerRouter);
 app.use("/upload", photoUploadRouter);
-
 app.use(handleError);
 
 app.listen(3000, "localhost", () => {
