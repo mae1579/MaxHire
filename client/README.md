@@ -1,55 +1,38 @@
-<img width="1792" height="592" alt="rr1pYhB - Imgur" src="https://github.com/user-attachments/assets/69ee0541-6bd4-4fa4-9caa-3479832bdf68" />
+### MaxHire – Projekt Portalu Ogłoszeniowego IT
 
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB) ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white) ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB) ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)  ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white) 
 
+MaxHire to wszechstronny ekosystem dla branży IT, który optymalizuje współpracę na linii technologia–biznes poprzez usprawnienie procesów projektowych. Kluczowym wyróżnikiem platformy jest elastyczny model dwustronnej publikacji ogłoszeń, pozwalający firmom sprawnie zlecać zadania, a specjalistom aktywnie oferować swoje usługi w ramach jednego, zintegrowanego systemu.
 
+### Struktura Repozytorium
 
-## MaxHire – Portal Ogłoszeniowy IT
+Repozytorium zawiera kod źródłowy api i frontendu:
 
-MaxHire to wszechstronna platforma dedykowana branży IT, stworzona w celu optymalizacji procesów łączących technologię z biznesem. Projekt działa jako centralny ekosystem, który usprawnia nawiązywanie współpracy, kładąc nacisk na efektywną realizację przedsięwzięć.
-
-Kluczowym wyróżnikiem platformy jest **elastyczny model dwustronnej publikacji ogłoszeń**. System umożliwia firmom skuteczne zlecanie projektów i poszukiwanie wykonawców, a specjalistom – aktywne oferowanie swoich usług. Dzięki temu MaxHire skraca dystans między zleceniodawcą a realizatorem, zapewniając szybkie dopasowanie kompetencji do konkretnych wyzwań i potrzeb projektowych.
-
-## Struktura Projektu
-
-Aplikacja podzielona jest na dwa główne katalogi:
-
-*   **`./frontend`**
-    *   Aplikacja kliencka (SPA) zbudowana w **React**.
-    *   Stylizacja przy użyciu **Tailwind CSS** dla szybkiego i responsywnego designu.
+*   **[./client](/client/)**
+    *   Aplikacja front end zbudowana w **React** na silniku **Vite**
+    *   Stylizacja przy użyciu **Tailwind CSS** z ikonami z **Lucide React**
     *   Odpowiada za warstwę wizualną i komunikację z API.
-*   **`./backend`**
-    *   Serwer REST API oparty na **Node.js** i **Express.js**.
-    *   Wykorzystuje relacyjną bazę danych **MySQL** do bezpiecznego przechowywania ogłoszeń i użytkowników.
-    *   Zarządza logiką biznesową, autoryzacją i przetwarzaniem danych.
+*   **[./backend](/backend/)**
+    *   Serwer REST API oparty na **Node.js i Express.js**
+    *   Relacyjna baza danych **MySQL z hashowaniem haseł JWT** i możliwością uploadu zdjęć do **Cloudinary**
+    *   Zarządza logiką autoryzacją i przetwarzaniem danych.
 
-## Kluczowe Endpointy API
+### Kluczowe Endpointy API
 
 | Metoda | Ścieżka | Opis |
 |---|---|---|
-| `GET` | `/api/offers` | Pobiera listę wszystkich dostępnych ogłoszeń. |
-| `POST` | `/api/auth/register` | Rejestracja nowego użytkownika w bazie. |
-| `POST` | `/api/auth/login` | Logowanie i generowanie tokena JWT. |
-| `POST` | `/api/offers` | Dodawanie nowego ogłoszenia (wymaga zalogowania). |
-| `DELETE`| `/api/offers/:id` | Usuwanie ogłoszenia z bazy danych. |
+| `GET` | `/offers` | Pobiera listę wszystkich dostępnych ogłoszeń |
+| `GET` | `/offer/:id` | Pobiera pojedyncze ogłoszenie |
+| `GET` | `/profile/:id` | Pobiera informacje użytkownika |
+| `POST` | `/addOffer` | Dodaje ogłoszenie do bazy |
+| `POST` | `/upload/profilePhoto` | Uploaduje zdjęcie użytkownika |
+| `POST` | `/register` | Rejestruje konto użytkownika |
+| `POST` | `/login` | Loguje na konto użytkownika |
 
-## Wygląd i Design
+### Wygląd i Design
 
+// zdjęcie
 
-# Logowanie
-
-<img width="1000" height="904" alt="K8BnYsq - Imgur" src="https://github.com/user-attachments/assets/532ab3a1-440b-48c7-a686-f62eb741c696" />
-
-
-# Strona Główna
-
-<img width="1000" height="904" alt="o9xF9Hp - Imgur" src="https://github.com/user-attachments/assets/c1251273-6e9e-410f-b0d8-7c64b16daee6" />
-
-
-Strona została zaprojektowana w nowoczesnym, **minimalistycznym stylu**. Głównym celem było stworzenie przejrzystego interfejsu, w którym użytkownik się nie gubi.
-
-*   **Kolorystyka:** Oparta na kontraście czerni i bieli, co nadaje aplikacji elegancki i profesjonalny charakter. Ciemne elementy na jasnym tle są bardzo czytelne.
-*   **Tło:** Aby ożywić prosty design, zastosowano delikatną, fioletową poświatę (gradient) w tle, która dodaje głębi, ale nie rozprasza uwagi.
-
-## Licencja
+### Licencja
 
 Projekt jest objęty licencją **GNU GPL v3.0**. Pełna treść licencji znajduje się w pliku `LICENSE`.
