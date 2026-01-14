@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext";
 import { 
   Search, 
   Code2, 
@@ -12,8 +13,10 @@ import {
 } from 'lucide-react';
 
 const Home = () => {
+  const { user } = useAuth();
+
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
+    <div className="min-h-screen text-gray-900 font-sans">
       
       <div className="fixed top-0 right-0 w-[400px] h-[400px] bg-purple-500/5 blur-[100px] -z-10" />
 
@@ -28,21 +31,25 @@ const Home = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link 
-            to="/login" 
-            className="w-full sm:w-auto px-6 py-2.5 bg-black text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-800 hover:scale-105 hover:shadow-lg active:scale-95"
-          >
-            <UserPlus size={16} />
-            Załóż konto
-          </Link>
-          
-          <Link 
-            to="/login" 
-            className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-50 hover:border-gray-300 hover:scale-105 active:scale-95"
-          >
-            <LogIn size={16} />
-            Zaloguj się
-          </Link>
+          {!user && (
+            <span>
+              <Link 
+                to="/login" 
+                className="w-full sm:w-auto px-6 py-2.5 bg-black text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-800 hover:scale-105 hover:shadow-lg active:scale-95"
+              >
+                <UserPlus size={16} />
+                Załóż konto
+              </Link>
+              
+              <Link 
+                to="/login" 
+                className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-50 hover:border-gray-300 hover:scale-105 active:scale-95"
+              >
+                <LogIn size={16} />
+                Zaloguj się
+              </Link>
+            </span>
+          )}
           
           <a 
             href="https://github.com/mae1579/MaxHire" 
