@@ -32,7 +32,7 @@ const Home = () => {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           {!user && (
-            <span>
+            <div className='flex flex-row gap-3'>
               <Link 
                 to="/login" 
                 className="w-full sm:w-auto px-6 py-2.5 bg-black text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-800 hover:scale-105 hover:shadow-lg active:scale-95"
@@ -48,7 +48,7 @@ const Home = () => {
                 <LogIn size={16} />
                 Zaloguj się
               </Link>
-            </span>
+            </div>
           )}
           
           <a 
