@@ -23,8 +23,7 @@ registerRouter.post("/", async (req, res) => {
     role: "user",
     name,
     surname,
-    phone,
-    photo,
+    phone
   });
   await user.insert();
   res.status(201).send(`Dodano użytkownika o numerze id: ${user.id}`);

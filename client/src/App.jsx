@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Browse from "./pages/Browse";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
+import Offer from "./pages/Offer";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -29,6 +30,14 @@ const App = () => {
           }
         />
         <Route path="/contact" element={<Contact />} />
+        <Route
+          path="/offer/:id"
+          element={
+            <ProtectedRoute>
+              <Offer />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/profile/:id" element={<Profile />} />
         <Route
           path="/login"

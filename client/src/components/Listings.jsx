@@ -22,7 +22,7 @@ const Listing = ({ id, title, company, description, tech = [], updated, onTagCli
         <div className="flex flex-col mb-1">
           <h3 className="w-fit">
             <Link 
-              to={`/offers/${id}`} 
+              to={`/offer/${id}`} 
               className="text-[#ffffff] text-lg font-bold hover:text-blue-400 transition-colors truncate block"
             >
               {title}
@@ -70,6 +70,7 @@ const Listings = () => {
         setOffers(Array.isArray(res.data) ? res.data : []);
       })
       .catch((err) => {
+        console.error(err);
         setError('Nie udało się załadować ofert');
       })
       .finally(() => {
