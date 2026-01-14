@@ -1,0 +1,20 @@
+<svg
+  width="40"
+  height="40"
+  viewBox="0 0 40 40"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  className="h-10 w-10"
+>
+  <path
+    d="M8 19V12L20 5L32 12V19"
+    stroke="#ffffff"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M32 21V28L20 35L8 28V21L20 28L32 21Z"
+    fill="#f4f4f5"
+  />
+</svg>
