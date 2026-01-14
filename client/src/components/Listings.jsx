@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import axios from "axios";
 import { Link } from 'react-router-dom';
 import formatUpdater from '../utils/DateFormatter';
+import { SlidersHorizontal, DollarSign } from 'lucide-react';
 
 const Listing = ({ id, title, company, description, tech = [], updated, onTagClick }) => {
   const normalizedTags = typeof tech === 'string' ? JSON.parse(tech) : tech;
@@ -63,11 +65,16 @@ const Listings = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch('http://localhost:3000/offers')
-      .then(res => res.ok ? res.json() : Promise.reject(new Error(`${res.status} ${res.statusText}`)))
-      .then(data => setOffers(Array.isArray(data) ? data : []))
-      .catch(() => setError('Nie udało się załadować ofert'))
-      .finally(() => setLoading(false));
+    axios.get('http://localhost:3000/offers', { withCredentials: true })
+      .then(res => {
+        setOffers(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        setError('Nie udało się załadować ofert');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleTagClick = (tag) => setSearchTerm(tag);
@@ -75,22 +82,37 @@ const Listings = () => {
   return (
     <div className="w-full max-w-4xl mx-auto px-6 py-12 min-h-screen">
       <div className="mb-8">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Szukaj ofert"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#070709] text-white border border-[#1f1f22] rounded-2xl px-6 py-4 outline-none transition-all duration-200 focus:border-[#3f3f46] focus:bg-[#111114] placeholder:text-[#71717a] font-medium"
-          />
-          {searchTerm && (
+        <div className="flex gap-3">
+          <div className="relative grow">
+            <input
+              type="text"
+              placeholder="Szukaj ofert"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#070709] text-white border border-[#1f1f22] rounded-2xl px-6 py-4 outline-none transition-all duration-200 focus:border-[#3f3f46] focus:bg-[#111114] placeholder:text-zinc-500 font-medium"
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#71717a] hover:text-white text-[10px] cursor-pointer font-bold uppercase tracking-widest"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          <div className="relative group">
             <button 
-              onClick={() => setSearchTerm('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#71717a] hover:text-white text-[10px] font-bold uppercase tracking-widest"
+              disabled
+              className="h-[58px] aspect-square flex items-center justify-center bg-[#070709] border border-[#1f1f22] rounded-2xl text-zinc-500  cursor-not-allowed transition-all duration-200"
             >
-              Reset
+              <SlidersHorizontal size={18} />
+              <DollarSign size={12} className="absolute top-2.5 right-2.5 text-zinc-500" />
             </button>
-          )}
+            <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#18181b] text-zinc-300 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[#3f3f46] shadow-2xl z-50">
+              Funkcja Premium
+            </span>
+          </div>
         </div>
       </div>
 

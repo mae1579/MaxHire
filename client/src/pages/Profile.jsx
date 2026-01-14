@@ -40,7 +40,7 @@ const Profile = () => {
       if (foundUser) setProfile(foundUser);
 
       let offersUrl = isOwner
-        ? "http://localhost:3000/offers/userOffer"
+        ? "http://localhost:3000/offer/userOffer"
         : "http://localhost:3000/offers";
 
       const offersRes = await axios.get(offersUrl, {

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from "../context/AuthContext";
 import toast from 'react-hot-toast';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ email: '', message: '' });
+  const { user, setUser } = useAuth();
+  const [formData, setFormData] = useState({ email: user?.email ?? '', message: '' });
 
   const handleSubmit = (e) => {
     e.preventDefault();

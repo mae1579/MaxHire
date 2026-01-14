@@ -3,6 +3,7 @@ import {
   LogOut,
   MenuIcon,
   PlusSquare,
+  CircleUser,
   User,
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
@@ -88,18 +89,15 @@ const Navbar = () => {
         ref={dropdownRef}
       >
         {user ? (
-          <div className="flex items-center gap-3 ml-4">
-            <Link
-              to={`/profile/${user.id || user._id}`}
-              className="text-zinc-300 font-medium text-sm hover:text-white"
-            >
-              {user.name}
-            </Link>
-
+          <div className="relative flex items-center gap-3 ml-4">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="focus:outline-none cursor-pointer"
+              className="flex items-center gap-3 focus:outline-none cursor-pointer"
             >
+              <span className="text-zinc-300 font-medium text-sm">
+                {user.name}
+              </span>
+
               {user.photo ? (
                 <img
                   src={user.photo}
@@ -116,14 +114,20 @@ const Navbar = () => {
 
             {dropdownOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl py-2 z-50">
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900">
-                  <PlusSquare className="h-4 w-4" /> Stwórz
-                  post
+                <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer">
+                  <PlusSquare className="h-4 w-4" /> Stwórz post
                 </button>
+                <div className="h-px bg-zinc-800 my-1 mx-2"></div>
+                <Link
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer"
+                  to={`/profile/${user.id || user._id}`}
+                >
+                  <CircleUser className="h-4 w-4" /> Mój profil
+                </Link>
                 <div className="h-px bg-zinc-800 my-1 mx-2"></div>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-900"
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-900 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" /> Wyloguj
                 </button>
