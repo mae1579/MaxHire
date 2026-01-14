@@ -7,6 +7,7 @@ import Browse from "./pages/Browse";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
 import Offer from "./pages/Offer";
+import CreateOffer from "./pages/CreateOffer";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -45,6 +46,7 @@ const App = () => {
             user ? <Navigate to="/" replace /> : <Login />
           }
         />
+        <Route path="/createOffer" element={<CreateOffer />} />
       </Routes>
     </div>
   );

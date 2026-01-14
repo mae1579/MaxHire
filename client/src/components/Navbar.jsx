@@ -114,9 +114,12 @@ const Navbar = () => {
 
             {dropdownOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl py-2 z-50">
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer">
+                <Link
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer"
+                  to={`/CreateOffer`}
+                >
                   <PlusSquare className="h-4 w-4" /> Stwórz post
-                </button>
+                </Link>
                 <div className="h-px bg-zinc-800 my-1 mx-2"></div>
                 <Link
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer"

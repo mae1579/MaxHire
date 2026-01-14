@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import {
@@ -190,56 +190,68 @@ const Profile = () => {
               </h2>
             </div>
             {isOwner && (
-              <button className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-2 rounded-xl font-bold hover:bg-white transition-all shadow-sm uppercase text-xs">
-                <Plus className="w-4 h-4" /> Dodaj
-                ogłoszenie
-              </button>
+              <Link 
+                className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-2 rounded-xl font-bold hover:bg-white transition-all shadow-sm uppercase text-xs"
+                to={`/CreateOffer`}>
+                  <Plus className="w-4 h-4" />Dodaj ogłoszenie
+              </Link>
             )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {offers.length > 0 ? (
-              offers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="group bg-white/60 backdrop-blur-md border border-zinc-200 p-6 rounded-2xl hover:border-zinc-400 hover:shadow-xl transition-all"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-zinc-900 leading-tight">
-                        {offer.title}
-                      </h3>
-                      <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mt-1">
-                        {offer.company}
-                      </p>
+              offers.map((offer) => {
+                let techTags = [];
+                try {
+                  if (offer.tech) {
+                    const first = typeof offer.tech === 'string' ? JSON.parse(offer.tech) : offer.tech;
+                    techTags = typeof first === 'string' ? JSON.parse(first) : first;
+                  }
+                } catch (e) {
+                  techTags = [];
+                }
+
+                return (
+                  <div
+                    key={offer.id}
+                    className="group bg-white/60 backdrop-blur-md border border-zinc-200 p-6 rounded-2xl hover:border-zinc-400 hover:shadow-xl transition-all"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-zinc-900 leading-tight">
+                          <Link to={`/offer/${offer.id}`}>{offer.title}</Link>
+                        </h3>
+                        <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mt-1">
+                          {offer.company}
+                        </p>
+                      </div>
+                      <Link to={`/offer/${offer.id}`}>
+                        <ExternalLink className="w-5 h-5 text-zinc-300 group-hover:text-zinc-950 transition-colors" />
+                      </Link>
                     </div>
-                    <ExternalLink className="w-5 h-5 text-zinc-300 group-hover:text-zinc-950 transition-colors" />
-                  </div>
-                  <p className="text-zinc-700 text-sm leading-relaxed mb-6 line-clamp-3 font-semibold">
-                    {offer.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {offer.tech &&
-                      (typeof offer.tech === "string"
-                        ? JSON.parse(offer.tech)
-                        : offer.tech
-                      ).map((t, idx) => (
+                    <p className="text-zinc-700 text-sm leading-relaxed mb-6 line-clamp-3 font-semibold">
+                      {offer.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(techTags) && techTags.map((t, idx) => (
                         <span
                           key={idx}
-                          className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm"
+                          className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm antialiased"
                         >
                           {t}
                         </span>
                       ))}
-                  </div>
-                  {offer.updated && (
-                    <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-2 text-[10px] text-zinc-400 font-black uppercase tracking-widest">
-                      <Calendar className="w-3 h-3" />{" "}
-                      {offer.updated}
                     </div>
-                  )}
-                </div>
-              ))
+
+                    {offer.updated && (
+                      <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-2 text-[10px] text-zinc-400 font-black uppercase tracking-widest">
+                        <Calendar className="w-3 h-3" /> {offer.updated}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             ) : (
               <div className="col-span-full py-20 bg-white/40 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400">
                 <p className="font-black uppercase tracking-[0.2em] text-xs">

@@ -29,7 +29,9 @@ const Offer = () => {
   if (loading) return <div className="max-w-4xl mx-auto px-6 py-20 text-black font-bold uppercase tracking-widest">Wczytywanie...</div>;
   if (error || !offer) return <div className="max-w-4xl mx-auto px-6 py-20 text-red-600 font-bold uppercase tracking-widest">{error}</div>;
 
-  const techTags = offer.tech ? (typeof offer.tech === 'string' ? JSON.parse(offer.tech) : offer.tech) : [];
+  const techTags = typeof offer.tech === 'string' 
+  ? JSON.parse(offer.tech.startsWith('"') ? JSON.parse(offer.tech) : offer.tech) 
+  : (offer.tech || []);
   const links = offer.links ? (typeof offer.links === 'string' ? JSON.parse(offer.links) : offer.links) : {};
 
   return (
@@ -71,6 +73,7 @@ const Offer = () => {
                 Stack Technologiczny
               </h2>
               <div className="flex flex-wrap gap-3">
+                {console.log(techTags)}
                 {techTags.map((tag, index) => (
                   <span 
                     key={index} 
