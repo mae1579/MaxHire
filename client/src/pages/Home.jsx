@@ -34,7 +34,7 @@ const Home = () => {
           {!user && (
             <div className='flex flex-row gap-3'>
               <Link 
-                to="/login" 
+                to="/login?mode=register" 
                 className="w-full sm:w-auto px-6 py-2.5 bg-black text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:bg-gray-800 hover:scale-105 hover:shadow-lg active:scale-95"
               >
                 <UserPlus size={16} />
@@ -117,11 +117,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      <footer className="py-8 text-center text-gray-400 border-t border-gray-100 text-[12px]">
-        <p>© {new Date().getFullYear()} MaxHire. Wszystkie prawa zastrzeżone.</p>
-      </footer>
-
     </div>
   );
 };

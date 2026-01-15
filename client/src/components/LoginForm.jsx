@@ -1,11 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
 const LoginForm = () => {
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isRegistering = searchParams.get("mode") === "register";
+
+  const setIsRegistering = (value) => {
+    setSearchParams({ mode: value ? "register" : "login" });
+  };
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -42,6 +48,7 @@ const LoginForm = () => {
       toast.error(message);
     }
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -128,7 +135,6 @@ const LoginForm = () => {
           </div>
 
           <button
-            onClick={() => navigate("/")}
             type="submit"
             className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg"
           >
