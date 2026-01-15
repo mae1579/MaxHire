@@ -36,6 +36,34 @@ class OfferRecord {
     return this.id;
   }
 
+  static async findAllFiltr(limit, offset, search) {
+    let sql = "SELECT * FROM `offers`";
+    const params = {
+      limit: limit.toString(),
+      offset: offset.toString(),
+    };
+
+    if (search) {
+      sql += " WHERE `title` LIKE :search";
+      params.search = `%${search}%`;
+    }
+
+    sql += " LIMIT :limit OFFSET :offset";
+
+    const [data] = await pool.execute(sql, params);
+
+    let countsql = "SELECT COUNT(*) as total from `offers`";
+    if (search) {
+      countsql += " WHERE title LIKE :search";
+    }
+    const [countRows] = await pool.execute(countsql, params);
+
+    return {
+      offers: data.map((el) => new OfferRecord(el)),
+      totalPages: Math.ceil(countRows[0].total / limit),
+    };
+  }
+
   static async findAll() {
     const [data] = await pool.execute("SELECT * FROM `offers` ");
     return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;

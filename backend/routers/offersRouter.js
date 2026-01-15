@@ -6,12 +6,13 @@ const { ValidationError } = require("../utils/handleErrors");
 const offersRouter = express.Router();
 
 offersRouter.get("/", tokenAuth, async (req, res) => {
-  const data = await OfferRecord.findAll();
-  if (!data) {
-    throw new ValidationError(
-      "Aktualnie nie ma zadnych zgloszen, sprobuj ponownie pozniej",
-    );
-  }
+  const search = req.query.search || "";
+  const limit = 5;
+  const page = parseInt(req.query.page) || 1;
+  const offset = (parseInt(page) - 1) * limit;
+
+  const data = await OfferRecord.findAllFiltr(limit, offset, search);
+
   res.status(200).json(data);
 });
 
