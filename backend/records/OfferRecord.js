@@ -72,17 +72,18 @@ class OfferRecord {
 
   static async findOneByUserId(user_id) {
     const [data] = await pool.execute(
-      "SELECT * FROM `offers` WHERE `user_id` = :id",
+      "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `user_id` = :id",
       {
         id: user_id,
       },
     );
-    return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
+    return data.length > 0 ? data.map((elem) => elem) : null;
+    //return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
   }
 
   static async getOneOffer(user_id) {
     const [data] = await pool.execute(
-      "SELECT `users`.`email`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `offers`.`id` = :id",
+      "SELECT `users`.`email`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `offers`.`id` = :id",
 
       {
         id: user_id,
