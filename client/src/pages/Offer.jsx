@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone, Eye } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
 
 const Offer = () => {
   const { id } = useParams();
@@ -30,8 +30,8 @@ const Offer = () => {
   if (error || !offer) return <div className="max-w-4xl mx-auto px-6 py-20 text-red-600 font-bold uppercase tracking-widest">{error}</div>;
 
   const techTags = typeof offer.tech === 'string' 
-  ? JSON.parse(offer.tech.startsWith('"') ? JSON.parse(offer.tech) : offer.tech) 
-  : (offer.tech || []);
+    ? JSON.parse(offer.tech.startsWith('"') ? JSON.parse(offer.tech) : offer.tech) 
+    : (offer.tech || []);
   const links = offer.links ? (typeof offer.links === 'string' ? JSON.parse(offer.links) : offer.links) : {};
 
   return (
@@ -50,8 +50,17 @@ const Offer = () => {
           
           <div className="lg:col-span-8 space-y-8">
             <header className="flex items-center gap-6 p-8 bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-sm">
-              <div className="w-16 h-16 bg-black rounded-2xl shrink-0 flex items-center justify-center shadow-lg">
-                <User size={32} className="text-white" />
+              <div className="w-20 h-20 bg-white rounded-2xl shrink-0 flex items-center justify-center shadow-lg overflow-hidden border border-black/5">
+                {offer.photo ? (
+                  <img 
+                    src={offer.photo} 
+                    alt={offer.company} 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={32} className="text-black" />
+                )}
               </div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight text-black">{offer.title}</h1>
@@ -73,7 +82,6 @@ const Offer = () => {
                 Stack Technologiczny
               </h2>
               <div className="flex flex-wrap gap-3">
-                {console.log(techTags)}
                 {techTags.map((tag, index) => (
                   <span 
                     key={index} 
@@ -95,8 +103,17 @@ const Offer = () => {
                 </h3>
                 
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-white/80 rounded-full flex items-center justify-center border border-black/10 shadow-sm">
-                    <User size={24} className="text-black" />
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-black/10 shadow-sm overflow-hidden">
+                    {offer.photo ? (
+                      <img 
+                        src={offer.photo} 
+                        alt={`${offer.name} ${offer.surname}`} 
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={24} className="text-black" />
+                    )}
                   </div>
                   <div>
                     <p className="text-[16px] font-bold text-black">{offer.name} {offer.surname}</p>
@@ -140,7 +157,7 @@ const Offer = () => {
                             <Phone size={16} />
                             <span className="cursor-pointer">xxx-xxx-xxx</span>
                           </div>
-                          <Eye size={14} className="opacity-40" />
+                          <span className="text-[10px] uppercase tracking-tighter opacity-40">Pokaż</span>
                         </button>
                       ) : (
                         <div className="flex items-center gap-3 text-black text-sm font-semibold p-3">

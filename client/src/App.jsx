@@ -12,6 +12,7 @@ import Recover from "./pages/Recover";
 import CreateOffer from "./pages/CreateOffer";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ const App = () => {
       </div>
 
       <Toaster />
+      <ScrollToTop />
       <Navbar />
 
       <main className="min-h-screen">
