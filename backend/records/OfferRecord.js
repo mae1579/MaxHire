@@ -37,15 +37,46 @@ class OfferRecord {
   }
 
   static async findAllFiltr(limit, offset, search) {
+    // BEZ SZUKANIA W INNYCH POLACH:
+    // let sql =
+    //   "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
+    // const params = {
+    //   limit: limit.toString(),
+    //   offset: offset.toString(),
+    // };
+    //
+    // if (search) {
+    //   sql += " WHERE `title` LIKE :search";
+    //   params.search = `%${search}%`;
+    // }
+    //
+    // sql += " LIMIT :limit OFFSET :offset";
+    //
+    // const [data] = await pool.execute(sql, params);
+    //
+    // let countsql = "SELECT COUNT(*) as total from `offers`";
+    // if (search) {
+    //   countsql += " WHERE title LIKE :search";
+    // }
+    // const [countRows] = await pool.execute(countsql, params);
+    //
+    // return {
+    //   offers: data.map((el) => el),
+    //   totalPages: Math.ceil(countRows[0].total / limit),
+    // };
     let sql =
       "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
+
     const params = {
       limit: limit.toString(),
       offset: offset.toString(),
     };
 
+    const searchCondition =
+      " WHERE (`title` LIKE :search OR `company` LIKE :search OR `description` LIKE :search OR `tech` LIKE :search)";
+
     if (search) {
-      sql += " WHERE `title` LIKE :search";
+      sql += searchCondition;
       params.search = `%${search}%`;
     }
 
@@ -54,9 +85,11 @@ class OfferRecord {
     const [data] = await pool.execute(sql, params);
 
     let countsql = "SELECT COUNT(*) as total from `offers`";
+
     if (search) {
-      countsql += " WHERE title LIKE :search";
+      countsql += searchCondition;
     }
+
     const [countRows] = await pool.execute(countsql, params);
 
     return {
