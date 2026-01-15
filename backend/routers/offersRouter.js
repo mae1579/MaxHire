@@ -7,7 +7,7 @@ const offersRouter = express.Router();
 
 offersRouter.get("/", tokenAuth, async (req, res) => {
   const search = req.query.search || "";
-  const limit = 5;
+  const limit = 2;
   const page = parseInt(req.query.page) || 1;
   const offset = (parseInt(page) - 1) * limit;
 

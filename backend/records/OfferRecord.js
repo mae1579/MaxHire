@@ -37,7 +37,8 @@ class OfferRecord {
   }
 
   static async findAllFiltr(limit, offset, search) {
-    let sql = "SELECT * FROM `offers`";
+    let sql =
+      "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
     const params = {
       limit: limit.toString(),
       offset: offset.toString(),
@@ -59,7 +60,7 @@ class OfferRecord {
     const [countRows] = await pool.execute(countsql, params);
 
     return {
-      offers: data.map((el) => new OfferRecord(el)),
+      offers: data.map((el) => el),
       totalPages: Math.ceil(countRows[0].total / limit),
     };
   }
