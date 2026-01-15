@@ -127,8 +127,8 @@ const LoginForm = () => {
 
           <div className="text-right mb-8">
             <Link
-              to={"/contact"}
-              className="text-sm font-medium text-zinc-400 hover:text-white underline-offset-4 hover:underline transition-colors"
+              to={"/recover"}
+              className="text-sm font-medium text-zinc-400 hover:text-white underline-offset-4 hover:underline transition-colors cursor-pointer"
             >
               Zapomniałeś hasła?
             </Link>
@@ -136,7 +136,7 @@ const LoginForm = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg"
+            className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg cursor-pointer"
           >
             Zaloguj się
           </button>
@@ -145,7 +145,7 @@ const LoginForm = () => {
             Nie masz konta?{" "}
             <button
               type="button"
-              className="text-white font-semibold hover:underline"
+              className="text-white font-semibold hover:underline cursor-pointer"
               onClick={() => setIsRegistering(true)}
             >
               Zarejestruj się
@@ -229,7 +229,7 @@ const LoginForm = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg"
+            className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg cursor-pointer"
           >
             Utwórz konto
           </button>
@@ -238,7 +238,7 @@ const LoginForm = () => {
             Masz już konto?{" "}
             <button
               type="button"
-              className="text-white font-semibold hover:underline"
+              className="text-white font-semibold hover:underline cursor-pointer"
               onClick={() => setIsRegistering(false)}
             >
               Zaloguj się

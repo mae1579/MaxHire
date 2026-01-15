@@ -8,6 +8,7 @@ import Browse from "./pages/Browse";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
 import Offer from "./pages/Offer";
+import Recover from "./pages/Recover";
 import CreateOffer from "./pages/CreateOffer";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -61,6 +62,10 @@ const App = () => {
           <Route
             path="/login"
             element={user ? <Navigate to="/" replace /> : <Login />}
+          />
+          <Route
+            path="/recover"
+            element={user ? <Navigate to="/" replace /> : <Recover />}
           />
           <Route 
             path="/createOffer" 
