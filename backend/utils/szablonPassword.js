@@ -2,7 +2,7 @@ const { transporter } = require("./gmailconfig");
 const createMailOptions = (userEmail, link) => {
   return {
     from: process.env.GMAIL_APP_EMAIL,
-    to: "johnyhell25@gmail.com",
+    to: userEmail,
     subject: "Instrukcja zmiany hasła w systemie MaxHire",
     link: "",
     html: `
