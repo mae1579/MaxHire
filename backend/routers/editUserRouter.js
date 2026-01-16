@@ -14,7 +14,8 @@ editUserRouter.patch("/", tokenAuth, async (req, res) => {
   const finduser = await UserRecord.findById(req.user.id);
 
   if (!finduser) throw new ValidationError("uzytkownik nie istnieje");
-  if (finduser.id !== req.user.id) return res.status(403).send();
+  if (finduser.id !== req.user.id)
+    throw new ValidationError("Uzytkownik zalogowany jest nieprawidlowy");
 
   const newUser = new UserRecord({
     ...finduser,
