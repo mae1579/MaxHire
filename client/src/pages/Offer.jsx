@@ -2,14 +2,18 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
+import { useAuth } from "../context/AuthContext";
 
 const Offer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user: loggedInUser } = useAuth();
   const [offer, setOffer] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPhone, setShowPhone] = useState(false);
+
+  const isOwner = loggedInUser && (loggedInUser.id === offer?.user_id);
 
   useEffect(() => {
     setLoading(true);
@@ -174,12 +178,21 @@ const Offer = () => {
                 </div>
               </div>
 
-              <a 
-                href={`mailto:${offer.email}?subject=Aplikacja: ${offer.title}`}
-                className="w-full bg-black text-white text-[13px] font-bold uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-zinc-800 transition-all text-center flex items-center justify-center shadow-xl"
-              >
-                Aplikuj Teraz
-              </a>
+              {isOwner ? (
+                <Link 
+                  to={`/editOffer/${id}`}
+                  className="w-full bg-black text-white text-[13px] font-bold uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-zinc-800 transition-all text-center flex items-center justify-center shadow-xl cursor-pointer"
+                >
+                  Edytuj ogłoszenie
+                </Link>
+              ) : (
+                <a 
+                  href={`mailto:${offer.email}?subject=Aplikacja: ${offer.title}`}
+                  className="w-full bg-black text-white text-[13px] font-bold uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-zinc-800 transition-all text-center flex items-center justify-center shadow-xl"
+                >
+                  Aplikuj Teraz
+                </a>
+              )}
             </aside>
           </div>
 
