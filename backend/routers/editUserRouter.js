@@ -6,22 +6,24 @@ const { mailOptionsP } = require("../utils/szablonPassword");
 const { transporter } = require("../utils/gmailconfig");
 const editUserRouter = express.Router();
 
-//Aktualizacja danych zalogowanego użytkownika.
-editUserRouter.post("/", tokenAuth, async (req, res) => {
+//Aktualizacja danych (email i numer) zalogowanego użytkownika.
+editUserRouter.patch("/", tokenAuth, async (req, res) => {
   const finduser = await UserRecord.findById(req.user.id);
-  if (!finduser) {
-    throw new ValidationError("uzytkownik nie istnieje");
-  }
+  
+  if (!finduser) throw new ValidationError("uzytkownik nie istnieje");
+  if (finduser.id !== req.user.id) return res.status(403).send();
+
   const newUser = new UserRecord({
     ...finduser,
-    ...req.body,
+    email: req.body.email || finduser.email,
+    phone: req.body.phone || finduser.phone,
   });
 
   try {
     await newUser.update();
     res.status(200).json({ message: "Dane profilowe zostały zaaktualizowane" });
   } catch (error) {
-    console.log(error);
+    res.status(400).json({ message: "Błąd aktualizacji" });
   }
 });
 

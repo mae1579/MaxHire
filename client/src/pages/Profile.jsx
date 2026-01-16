@@ -11,6 +11,8 @@ import {
   ExternalLink,
   Camera,
   Plus,
+  Check,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -20,23 +22,31 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editForm, setEditForm] = useState({ email: "", phone: "" });
   const fileInputRef = useRef(null);
 
   const isOwner =
     loggedInUser &&
     (loggedInUser.id === id || loggedInUser._id === id);
 
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email);
+  const isPhoneValid = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(editForm.phone);
+  const canSave = isEmailValid && isPhoneValid && !isSubmitting;
+
   const fetchData = async () => {
     try {
       setLoading(true);
-
       const [profileRes, offersRes] = await Promise.all([
         axios.get(`http://localhost:3000/profile/getProfile/${id}`, { withCredentials: true }),
         axios.get(`http://localhost:3000/offer/user/${id}`, { withCredentials: true })
       ]);
 
       if (profileRes.data.message && profileRes.data.message.length > 0) {
-        setProfile(profileRes.data.message[0]);
+        const userData = profileRes.data.message[0];
+        setProfile(userData);
+        setEditForm({ email: userData.email, phone: userData.phone || "" });
       }
 
       const offersData = offersRes.data.message;
@@ -52,6 +62,24 @@ const Profile = () => {
     fetchData();
   }, [id]);
 
+  const handleUpdateProfile = async () => {
+    if (!canSave) return;
+    setIsSubmitting(true);
+    try {
+      const res = await axios.patch("http://localhost:3000/edit/user", editForm, { withCredentials: true });
+      const updated = { ...profile, ...editForm };
+      setProfile(updated);
+      setUser(updated);
+      localStorage.setItem("user", JSON.stringify(updated));
+      setIsEditing(false);
+      toast.success(res.data.message);
+    } catch (e) {
+      toast.error(e.response?.data?.message || "Błąd zapisu");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -64,19 +92,11 @@ const Profile = () => {
         data,
         {
           withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
-
-      const usersRes = await axios.get(
-        `http://localhost:3000/profile/getProfile/${id}`,
-        { withCredentials: true }
-      );
-      
+      const usersRes = await axios.get(`http://localhost:3000/profile/getProfile/${id}`, { withCredentials: true });
       const updatedMe = usersRes.data.message && usersRes.data.message[0];
-
       if (updatedMe) {
         setUser(updatedMe);
         localStorage.setItem("user", JSON.stringify(updatedMe));
@@ -97,30 +117,20 @@ const Profile = () => {
 
   if (!profile)
     return (
-      <div className="text-zinc-900 flex items-center justify-center font-bold py-20">
+      <div className="text-zinc-950 flex items-center justify-center font-bold py-20">
         Użytkownik nie istnieje.
       </div>
     );
 
   return (
     <div className="text-zinc-950 pb-24 relative z-10">
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept="image/*"
-        onChange={handlePhotoUpload}
-      />
+      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
 
       <div className="relative h-48 bg-white/10 border-b border-zinc-200 backdrop-blur-sm">
         <div className="absolute -bottom-16 left-6 md:left-16 lg:left-32">
           <div className="relative group">
             {profile.photo ? (
-              <img
-                src={profile.photo}
-                className="w-32 h-32 md:w-40 md:h-40 rounded-3xl object-cover border-4 border-white shadow-xl bg-white"
-                alt=""
-              />
+              <img src={profile.photo} className="w-32 h-32 md:w-40 md:h-40 rounded-3xl object-cover border-4 border-white shadow-xl bg-white" alt="" />
             ) : (
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl border-4 border-white shadow-xl bg-white flex items-center justify-center">
                 <User className="w-20 h-20 text-zinc-300" />
@@ -128,8 +138,8 @@ const Profile = () => {
             )}
             {isOwner && (
               <div
-                onClick={() => fileInputRef.current.click()}
-                className="absolute inset-0 bg-black/40 rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                onClick={() => !isSubmitting && fileInputRef.current.click()}
+                className={`absolute inset-0 bg-black/40 rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${isSubmitting ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <Camera className="text-white w-8 h-8" />
               </div>
@@ -146,19 +156,57 @@ const Profile = () => {
             </h1>
             <div className="flex flex-wrap gap-4 mt-3 text-zinc-700 font-bold">
               <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-lg border border-zinc-200 shadow-sm">
-                <Mail className="w-4 h-4 text-zinc-400" /> {profile.email}
+                <Mail className={`w-4 h-4 shrink-0 ${isEditing && !isEmailValid ? 'text-red-500' : 'text-zinc-400'}`} />
+                {isEditing ? (
+                  <input 
+                    disabled={isSubmitting}
+                    className="bg-transparent outline-none border-b border-zinc-300 focus:border-zinc-900 min-w-[180px]"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  />
+                ) : profile.email}
               </div>
-              {profile.phone && (
-                <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-lg border border-zinc-200 shadow-sm">
-                  <Phone className="w-4 h-4 text-zinc-400" /> {profile.phone}
-                </div>
-              )}
+              <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-lg border border-zinc-200 shadow-sm">
+                <Phone className={`w-4 h-4 shrink-0 ${isEditing && !isPhoneValid ? 'text-red-500' : 'text-zinc-400'}`} />
+                {isEditing ? (
+                  <input 
+                    disabled={isSubmitting}
+                    className="bg-transparent outline-none border-b border-zinc-300 focus:border-zinc-900 min-w-[120px]"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  />
+                ) : profile.phone || "Brak numeru"}
+              </div>
             </div>
           </div>
           {isOwner && (
-            <button className="bg-zinc-950 text-white px-8 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95">
-              Edytuj Profil
-            </button>
+            <div className="flex items-center gap-3">
+              {isEditing ? (
+                <>
+                  <button 
+                    onClick={handleUpdateProfile} 
+                    disabled={!canSave}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase tracking-tighter transition-all shadow-lg active:scale-95 cursor-pointer ${canSave ? 'bg-zinc-950 text-white hover:bg-zinc-800' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'}`}
+                  >
+                    {isSubmitting ? "Czekaj..." : <><Check className="w-5 h-5" /> Zapisz</>}
+                  </button>
+                  <button 
+                    onClick={() => { setIsEditing(false); setEditForm({ email: profile.email, phone: profile.phone || "" }); }} 
+                    disabled={isSubmitting} 
+                    className={`flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-3 rounded-xl font-bold transition-all shadow-sm uppercase text-xs cursor-pointer ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
+                  >
+                    <X className="w-4 h-4" /> Anuluj
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="bg-zinc-950 text-white px-8 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95 cursor-pointer"
+                >
+                  Edytuj Profil
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -174,7 +222,7 @@ const Profile = () => {
             </div>
             {isOwner && (
               <Link
-                className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-2 rounded-xl font-bold hover:bg-white transition-all shadow-sm uppercase text-xs"
+                className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-2 rounded-xl font-bold hover:bg-white transition-all shadow-sm uppercase text-xs cursor-pointer"
                 to={`/CreateOffer`}
               >
                 <Plus className="w-4 h-4" />Dodaj ogłoszenie
@@ -191,44 +239,27 @@ const Profile = () => {
                     const first = typeof offer.tech === "string" ? JSON.parse(offer.tech) : offer.tech;
                     techTags = typeof first === "string" ? JSON.parse(first) : first;
                   }
-                } catch (e) {
-                  techTags = [];
-                }
+                } catch (e) { techTags = []; }
 
                 return (
-                  <div
-                    key={offer.id}
-                    className="group bg-white/60 backdrop-blur-md border border-zinc-200 p-6 rounded-2xl hover:border-zinc-400 hover:shadow-xl transition-all"
-                  >
+                  <div key={offer.id} className="group bg-white/60 backdrop-blur-md border border-zinc-200 p-6 rounded-2xl hover:border-zinc-400 hover:shadow-xl transition-all">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="text-xl font-bold text-zinc-900 leading-tight">
-                          <Link to={`/offer/${offer.id}`}>{offer.title}</Link>
+                          <Link className="cursor-pointer" to={`/offer/${offer.id}`}>{offer.title}</Link>
                         </h3>
-                        <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mt-1">
-                          {offer.company}
-                        </p>
+                        <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mt-1">{offer.company}</p>
                       </div>
-                      <Link to={`/offer/${offer.id}`}>
+                      <Link className="cursor-pointer" to={`/offer/${offer.id}`}>
                         <ExternalLink className="w-5 h-5 text-zinc-300 group-hover:text-zinc-950 transition-colors" />
                       </Link>
                     </div>
-                    <p className="text-zinc-700 text-sm leading-relaxed mb-6 line-clamp-3 font-semibold">
-                      {offer.description}
-                    </p>
-
+                    <p className="text-zinc-700 text-sm leading-relaxed mb-6 line-clamp-3 font-semibold">{offer.description}</p>
                     <div className="flex flex-wrap gap-2">
-                      {Array.isArray(techTags) &&
-                        techTags.map((t, idx) => (
-                          <span
-                            key={idx}
-                            className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm antialiased"
-                          >
-                            {t}
-                          </span>
-                        ))}
+                      {Array.isArray(techTags) && techTags.map((t, idx) => (
+                        <span key={idx} className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm antialiased">{t}</span>
+                      ))}
                     </div>
-
                     {offer.updated && (
                       <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-2 text-[10px] text-zinc-400 font-black uppercase tracking-widest">
                         <Calendar className="w-3 h-3" /> {offer.updated}
@@ -239,9 +270,7 @@ const Profile = () => {
               })
             ) : (
               <div className="col-span-full py-20 bg-white/40 border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center text-zinc-400">
-                <p className="font-black uppercase tracking-[0.2em] text-xs">
-                  Brak ogłoszeń
-                </p>
+                <p className="font-black uppercase tracking-[0.2em] text-xs">Brak ogłoszeń</p>
               </div>
             )}
           </div>
