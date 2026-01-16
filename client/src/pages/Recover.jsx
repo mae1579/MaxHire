@@ -34,7 +34,7 @@ const Recover = () => {
     }
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/edit/user/changePassword`, { token, password });
+      await axios.patch(`${API_URL}/edit/user/changePassword`, { token, password });
       toast.success("Hasło zostało zmienione!");
       navigate("/login");
     } catch (error) {
