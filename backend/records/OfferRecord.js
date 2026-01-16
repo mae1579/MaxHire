@@ -47,7 +47,7 @@ class OfferRecord {
         tech: this.tech,
         links: this.links,
         updated: this.updated,
-      }
+      },
     );
   }
 
@@ -61,18 +61,20 @@ class OfferRecord {
     };
 
     const searchCondition =
-      " WHERE (`title` LIKE :search OR `company` LIKE :search OR `description` LIKE :search OR `tech` LIKE :search)";
+      " WHERE (LOWER(`title`) LIKE :search OR LOWER(`company`) LIKE :search OR LOWER(`description`) LIKE :search OR LOWER(`tech`) LIKE :search)";
 
     if (search) {
       sql += searchCondition;
-      params.search = `%${search}%`;
+      params.search = `%${search.toLowerCase()}%`;
     }
 
     sql += " LIMIT :limit OFFSET :offset";
 
     const [data] = await pool.execute(sql, params);
 
-    let countsql = "SELECT COUNT(*) as total from `offers`";
+    //let countsql = "SELECT COUNT(*) as total from `offers`";
+    let countsql =
+      "SELECT COUNT(*) as total FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
 
     if (search) {
       countsql += searchCondition;
