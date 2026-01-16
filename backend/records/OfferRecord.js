@@ -36,6 +36,21 @@ class OfferRecord {
     return this.id;
   }
 
+  async update() {
+    await pool.execute(
+      "UPDATE `offers` SET `title` = :title, `company` = :company, `description` = :description, `tech` = :tech, `links` = :links, `updated` = :updated WHERE `id` = :id",
+      {
+        id: this.id,
+        title: this.title,
+        company: this.company,
+        description: this.description,
+        tech: this.tech,
+        links: this.links,
+        updated: this.updated,
+      }
+    );
+  }
+
   static async findAllFiltr(limit, offset, search) {
     let sql =
       "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";

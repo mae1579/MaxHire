@@ -77,6 +77,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route 
+            path="/editOffer/:id" 
+            element={
+              <ProtectedRoute>
+                <CreateOffer />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
 

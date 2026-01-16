@@ -25,6 +25,8 @@ Repozytorium zawiera kod źródłowy api i frontendu:
 | `GET` | `/offer/getOffer/:id` | Pobiera pojedyncze ogłoszenie |
 | `GET` | `/profile/getProfile/:id` | Pobiera informacje użytkownika |
 | `POST` | `/addOffer` | Dodaje ogłoszenie do bazy |
+| `POST` | `/offers/editOffer/:id` | Edytuje ogłoszenie w bazie |
+| `POST` | `/offers/deleteOffer/:id` | Usuwa ogłoszenie z bazy |
 | `POST` | `/upload/profilePhoto` | Uploaduje zdjęcie użytkownika |
 | `POST` | `/register` | Rejestruje konto użytkownika |
 | `POST` | `/login` | Loguje na konto użytkownika |
