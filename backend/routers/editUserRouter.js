@@ -12,7 +12,7 @@ const bcrypt = require("bcrypt");
 //Aktualizacja danych (email i numer) zalogowanego użytkownika.
 editUserRouter.patch("/", tokenAuth, async (req, res) => {
   const finduser = await UserRecord.findById(req.user.id);
-  
+
   if (!finduser) throw new ValidationError("uzytkownik nie istnieje");
   if (finduser.id !== req.user.id) return res.status(403).send();
 
@@ -47,7 +47,6 @@ editUserRouter.post("/forgetPassword", async (req, res) => {
 
   const mailbody = createMailOptions(userMail, link);
 
-  console.log(mailbody.to);
   try {
     await transporter.sendMail(mailbody);
     res
