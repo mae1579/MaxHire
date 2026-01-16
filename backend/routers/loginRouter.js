@@ -23,13 +23,13 @@ loginRouter.post("/", async (req, res, next) => {
 
   const tokenPayload = { id: user.id, role: user.role };
   const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
-    expiresIn: "1h",
+    expiresIn: "30d",
   });
 
   res
     .cookie("token_auth", token, {
       httpOnly: true,
-      maxAge: 3600000,
+      maxAge: 2592000,
       sameSite: "strict",
     })
 
