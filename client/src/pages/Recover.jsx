@@ -1,26 +1,29 @@
 import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
 
 const Recover = () => {
-  const [searchParams] = useSearchParams();
+  const { token } = useParams();
   const navigate = useNavigate();
-  const token = searchParams.get("token");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const API_URL = "http://localhost:3000";
 
   const handleRequestReset = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/forgetPassword`, { email });
+      await axios.post(`${API_URL}/edit/user/forgetPassword`, { email });
       toast.success("Link do resetowania wysłany na email!");
     } catch (error) {
       toast.error(error.response?.data?.message || "Błąd wysyłania");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -29,12 +32,15 @@ const Recover = () => {
     if (password !== confirmPassword) {
       return toast.error("Hasła nie są identyczne");
     }
+    setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/changePassword`, { token, password });
+      await axios.post(`${API_URL}/edit/user/changePassword`, { token, password });
       toast.success("Hasło zostało zmienione!");
       navigate("/login");
     } catch (error) {
       toast.error(error.response?.data?.message || "Link wygasł lub jest niepoprawny");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,11 +64,12 @@ const Recover = () => {
               </label>
               <input
                 required
+                disabled={isLoading}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="twój@email.example"
-                className="w-full p-3 mb-8 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                className="w-full p-3 mb-8 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all disabled:opacity-50"
               />
             </div>
           ) : (
@@ -73,11 +80,12 @@ const Recover = () => {
                 </label>
                 <input
                   required
+                  disabled={isLoading}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full p-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                  className="w-full p-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all disabled:opacity-50"
                 />
               </div>
               <div>
@@ -86,11 +94,12 @@ const Recover = () => {
                 </label>
                 <input
                   required
+                  disabled={isLoading}
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full p-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                  className="w-full p-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all disabled:opacity-50"
                 />
               </div>
             </div>
@@ -98,16 +107,18 @@ const Recover = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg cursor-pointer"
+            disabled={isLoading}
+            className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            {token ? "Zapisz hasło" : "Wyślij link"}
+            {isLoading ? "Przetwarzanie..." : (token ? "Zapisz hasło" : "Wyślij link")}
           </button>
 
           <p className="text-center text-zinc-500 mt-8 text-sm">
             Pamiętasz hasło?{" "}
             <button
               type="button"
-              className="text-white font-semibold hover:underline cursor-pointer"
+              disabled={isLoading}
+              className="text-white font-semibold hover:underline cursor-pointer disabled:opacity-50"
               onClick={() => navigate("/login?mode=login")}
             >
               Wróć do logowania

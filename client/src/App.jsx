@@ -69,6 +69,10 @@ const App = () => {
             path="/recover"
             element={user ? <Navigate to="/" replace /> : <Recover />}
           />
+          <Route
+            path="/recover/:token"
+            element={user ? <Navigate to="/" replace /> : <Recover />}
+          />
           <Route 
             path="/createOffer" 
             element={
