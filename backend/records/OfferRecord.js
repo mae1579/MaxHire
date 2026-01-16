@@ -37,33 +37,6 @@ class OfferRecord {
   }
 
   static async findAllFiltr(limit, offset, search) {
-    // BEZ SZUKANIA W INNYCH POLACH:
-    // let sql =
-    //   "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
-    // const params = {
-    //   limit: limit.toString(),
-    //   offset: offset.toString(),
-    // };
-    //
-    // if (search) {
-    //   sql += " WHERE `title` LIKE :search";
-    //   params.search = `%${search}%`;
-    // }
-    //
-    // sql += " LIMIT :limit OFFSET :offset";
-    //
-    // const [data] = await pool.execute(sql, params);
-    //
-    // let countsql = "SELECT COUNT(*) as total from `offers`";
-    // if (search) {
-    //   countsql += " WHERE title LIKE :search";
-    // }
-    // const [countRows] = await pool.execute(countsql, params);
-    //
-    // return {
-    //   offers: data.map((el) => el),
-    //   totalPages: Math.ceil(countRows[0].total / limit),
-    // };
     let sql =
       "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
 
@@ -98,6 +71,16 @@ class OfferRecord {
     };
   }
 
+  static async findOneByIdOffer(offer_id) {
+    const [data] = await pool.execute(
+      "SELECT * FROM `offers` WHERE `id` = :id",
+      {
+        id: offer_id,
+      },
+    );
+    return data.length === 0 ? null : new OfferRecord(data[0]);
+  }
+
   static async findAll() {
     const [data] = await pool.execute("SELECT * FROM `offers` ");
     return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
@@ -123,6 +106,11 @@ class OfferRecord {
       },
     );
     return data.length === 0 ? null : data;
+  }
+  async delete() {
+    await pool.execute("DELETE FROM `offers` WHERE `id` = :id", {
+      id: this.id,
+    });
   }
 }
 
