@@ -5,6 +5,9 @@ const { ValidationError } = require("../utils/handleErrors");
 const { mailOptionsP } = require("../utils/szablonPassword");
 const { transporter } = require("../utils/gmailconfig");
 const editUserRouter = express.Router();
+const jwt = require("jsonwebtoken");
+const { createMailOptions } = require("../utils/szablonPassword");
+const bcrypt = require("bcrypt");
 
 //Aktualizacja danych zalogowanego użytkownika.
 editUserRouter.post("/", tokenAuth, async (req, res) => {
@@ -34,11 +37,13 @@ editUserRouter.post("/forgetPassword", async (req, res) => {
   if (!finduser) {
     throw new ValidationError("Uzytkownik o takim e-mailu nie istnieje");
   }
+  const token = jwt.sign({ id: finduser.id }, process.env.JWT_SECRET2, {
+    expiresIn: "1h",
+  });
 
-  const mailbody = {
-    ...mailOptionsP,
-    to: userMail,
-  };
+  const link = `http://localhost:5173/recover/${token}`;
+
+  const mailbody = createMailOptions(userMail, link);
 
   console.log(mailbody.to);
   try {
@@ -49,6 +54,32 @@ editUserRouter.post("/forgetPassword", async (req, res) => {
   } catch (error) {
     throw new ValidationError(
       "Wiadomosc nie moze zostac wyslana, sprobuj ponownie pozniej",
+    );
+  }
+});
+
+// zmiana hasła 2 krok
+editUserRouter.patch("/changePassword", async (req, res) => {
+  const data = req.body;
+  const decoded = jwt.verify(data.token, process.env.JWT_SECRET2);
+  const userId = decoded.id;
+  const hashedPassword = await bcrypt.hash(
+    data.password,
+    Number(process.env.BCRYPT_SALT),
+  );
+
+  const user = await UserRecord.findById(userId);
+  const updatedUser = new UserRecord({
+    ...user,
+    password: hashedPassword,
+  });
+
+  try {
+    await updatedUser.update();
+    res.status(200).json({ message: "Haslo zostalo zmienione !" });
+  } catch (error) {
+    throw new ValidationError(
+      ` Wystapil blad podczas aktualizacji hasla ${error}`,
     );
   }
 });
