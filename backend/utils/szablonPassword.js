@@ -1,9 +1,11 @@
 const { transporter } = require("./gmailconfig");
-const mailOptionsP = {
-  from: process.env.GMAIL_APP_EMAIL,
-  to: "johnyhell25@gmail.com",
-  subject: "Instrukcja zmiany hasła w systemie MaxHire",
-  html: `
+const createMailOptions = (userEmail, link) => {
+  return {
+    from: process.env.GMAIL_APP_EMAIL,
+    to: "johnyhell25@gmail.com",
+    subject: "Instrukcja zmiany hasła w systemie MaxHire",
+    link: "",
+    html: `
     <div style="background-color: #000000; color: #ffffff; padding: 40px; font-family: 'Segoe UI', Arial, sans-serif; text-align: center;">
         
         <h2 style="color: #ffffff; margin-bottom: 20px;">Zmiana hasła</h2>
@@ -13,7 +15,7 @@ const mailOptionsP = {
         </p>
 
         <div style="margin: 40px 0;">
-            <a href="http://localhost:3000/offers" 
+            <a href="${link}"
                style="background-color: #ffffff; color: #000000; padding: 14px 30px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">
                USTAW NOWE HASŁO
             </a>
@@ -30,6 +32,7 @@ const mailOptionsP = {
         </div>
     </div>
     `,
+  };
 };
 
 //Uzycie wysylki.
@@ -45,5 +48,5 @@ const mailOptionsP = {
 // }
 
 module.exports = {
-  mailOptionsP,
+  createMailOptions,
 };
