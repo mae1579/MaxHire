@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
 
 const Offer = () => {
@@ -40,10 +40,10 @@ const Offer = () => {
         
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-black/60 hover:text-black transition-colors mb-12"
+          className="flex items-center gap-2 text-black/60 hover:text-black transition-colors mb-12 cursor-pointer"
         >
           <ArrowLeft size={18} />
-          <span className="text-sm font-bold uppercase tracking-wider cursor-pointer">Wróć</span>
+          <span className="text-sm font-bold uppercase tracking-wider">Wróć</span>
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -96,13 +96,15 @@ const Offer = () => {
 
           <div className="lg:col-span-4">
             <aside className="sticky top-12 space-y-6">
-              
               <div className="p-8 border border-white/40 rounded-3xl bg-white/60 backdrop-blur-md shadow-sm">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-black mb-8 border-b border-black/5 pb-2">
                   Ogłoszeniodawca
                 </h3>
                 
-                <div className="flex items-center gap-4 mb-8">
+                <Link 
+                  to={`/profile/${offer.user_id}`} 
+                  className="flex items-center gap-4 mb-8 group cursor-pointer"
+                >
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-black/10 shadow-sm overflow-hidden">
                     {offer.photo ? (
                       <img 
@@ -116,10 +118,12 @@ const Offer = () => {
                     )}
                   </div>
                   <div>
-                    <p className="text-[16px] font-bold text-black">{offer.name} {offer.surname}</p>
-                    <p className="text-xs text-zinc-500 font-medium">Użytkownik</p>
+                    <p className="text-[16px] font-bold text-black decoration-zinc-300 underline-offset-4">
+                      {offer.name} {offer.surname}
+                    </p>
+                    <p className="text-xs text-zinc-500 font-medium">Zobacz profil</p>
                   </div>
-                </div>
+                </Link>
 
                 <div className="flex flex-col gap-2">
                   {Object.entries(links).map(([name, url]) => (
@@ -151,13 +155,13 @@ const Offer = () => {
                       {!showPhone ? (
                         <button 
                           onClick={() => setShowPhone(true)}
-                          className="w-full flex items-center justify-between text-zinc-600 hover:text-black text-sm font-semibold p-3 rounded-xl hover:bg-white/80 transition-all"
+                          className="w-full flex items-center justify-between text-zinc-600 hover:text-black text-sm font-semibold p-3 rounded-xl hover:bg-white/80 transition-all cursor-pointer"
                         >
                           <div className="flex items-center gap-3">
                             <Phone size={16} />
-                            <span className="cursor-pointer">xxx-xxx-xxx</span>
+                            <span>xxx-xxx-xxx</span>
                           </div>
-                          <span className="text-[10px] uppercase tracking-tighter opacity-40">Pokaż</span>
+                          <span className="text-[10px] uppercase tracking-tighter opacity-40 ">Pokaż</span>
                         </button>
                       ) : (
                         <div className="flex items-center gap-3 text-black text-sm font-semibold p-3">

@@ -13,6 +13,7 @@ const { offersRouter } = require("./routers/offersRouter");
 const { photoUploadRouter } = require("./routers/photoUploadRouter");
 const { offerRouter } = require("./routers/offerRouter");
 const { editUserRouter } = require("./routers/editUserRouter");
+const { profileRouter } = require("./routers/profileRouter");
 
 const app = express();
 app.use(
@@ -37,6 +38,7 @@ app.use("/logout", logoutRouter);
 app.use("/addOffer", addOfferRouter);
 app.use("/offers", offersRouter);
 app.use("/offer", offerRouter);
+app.use("/profile", profileRouter);
 app.use("/upload", photoUploadRouter);
 app.use(handleError);
 

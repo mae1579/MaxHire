@@ -6,13 +6,13 @@ const { ValidationError } = require("../utils/handleErrors");
 const offerRouter = express.Router();
 
 //Wyswietlenie ofert zalogowanego uzytkownika
-offerRouter.get("/userOffer", tokenAuth, async (req, res) => {
-  const user_id = req.user.id;
-  const data = await OfferRecord.findOneByUserId(user_id);
+offerRouter.get("/user/:id", tokenAuth, async (req, res) => {
+  const { id } = req.params;
+  const data = await OfferRecord.findOneByUserId(id);
   if (!data) {
-    throw new ValidationError("uzytkownik nie dodal jeszcze  zadnych ofert");
+    throw new ValidationError("Uzytkownik nie dodal jeszcze zadnych ofert");
   }
-  res.status(200).json({ message: data });
+  res.status(200).json({ message: data || [] });
 });
 //Wyswietlenie jednej konkretnej oferty
 offerRouter.get("/getOffer/:id", tokenAuth, async (req, res) => {

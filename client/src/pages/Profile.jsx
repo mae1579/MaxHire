@@ -30,27 +30,17 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      const usersRes = await axios.get(
-        "http://localhost:3000/homeUser",
-        { withCredentials: true }
-      );
-      const foundUser = usersRes.data.find(
-        (u) => u.id === id
-      );
-      if (foundUser) setProfile(foundUser);
+      const [profileRes, offersRes] = await Promise.all([
+        axios.get(`http://localhost:3000/profile/getProfile/${id}`, { withCredentials: true }),
+        axios.get(`http://localhost:3000/offer/user/${id}`, { withCredentials: true })
+      ]);
 
-      let offersUrl = isOwner
-        ? "http://localhost:3000/offer/userOffer"
-        : "http://localhost:3000/offers";
+      if (profileRes.data.message && profileRes.data.message.length > 0) {
+        setProfile(profileRes.data.message[0]);
+      }
 
-      const offersRes = await axios.get(offersUrl, {
-        withCredentials: true,
-      });
-
-      const data = isOwner
-        ? offersRes.data.message
-        : offersRes.data.filter((o) => o.user_id === id);
-      setOffers(Array.isArray(data) ? data : []);
+      const offersData = offersRes.data.message;
+      setOffers(Array.isArray(offersData) ? offersData : []);
     } catch (error) {
       setOffers([]);
     } finally {
@@ -60,7 +50,7 @@ const Profile = () => {
 
   useEffect(() => {
     fetchData();
-  }, [id, isOwner]);
+  }, [id]);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -81,23 +71,17 @@ const Profile = () => {
       );
 
       const usersRes = await axios.get(
-        "http://localhost:3000/homeUser",
+        `http://localhost:3000/profile/getProfile/${id}`,
         { withCredentials: true }
       );
-      const updatedMe = usersRes.data.find(
-        (u) => u.id === id
-      );
+      
+      const updatedMe = usersRes.data.message && usersRes.data.message[0];
 
       if (updatedMe) {
         setUser(updatedMe);
-        localStorage.setItem(
-          "user",
-          JSON.stringify(updatedMe)
-        );
+        localStorage.setItem("user", JSON.stringify(updatedMe));
         setProfile(updatedMe);
-        toast.success("Zdjęcie zmienione", {
-          id: uploadToast,
-        });
+        toast.success("Zdjęcie zmienione", { id: uploadToast });
       }
     } catch (error) {
       toast.error("Błąd", { id: uploadToast });
@@ -110,6 +94,7 @@ const Profile = () => {
         Ładowanie...
       </div>
     );
+
   if (!profile)
     return (
       <div className="text-zinc-900 flex items-center justify-center font-bold py-20">
@@ -161,13 +146,11 @@ const Profile = () => {
             </h1>
             <div className="flex flex-wrap gap-4 mt-3 text-zinc-700 font-bold">
               <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-lg border border-zinc-200 shadow-sm">
-                <Mail className="w-4 h-4 text-zinc-400" />{" "}
-                {profile.email}
+                <Mail className="w-4 h-4 text-zinc-400" /> {profile.email}
               </div>
               {profile.phone && (
                 <div className="flex items-center gap-2 bg-white/80 px-3 py-1.5 rounded-lg border border-zinc-200 shadow-sm">
-                  <Phone className="w-4 h-4 text-zinc-400" />{" "}
-                  {profile.phone}
+                  <Phone className="w-4 h-4 text-zinc-400" /> {profile.phone}
                 </div>
               )}
             </div>
@@ -190,10 +173,11 @@ const Profile = () => {
               </h2>
             </div>
             {isOwner && (
-              <Link 
+              <Link
                 className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-2 rounded-xl font-bold hover:bg-white transition-all shadow-sm uppercase text-xs"
-                to={`/CreateOffer`}>
-                  <Plus className="w-4 h-4" />Dodaj ogłoszenie
+                to={`/CreateOffer`}
+              >
+                <Plus className="w-4 h-4" />Dodaj ogłoszenie
               </Link>
             )}
           </div>
@@ -204,8 +188,8 @@ const Profile = () => {
                 let techTags = [];
                 try {
                   if (offer.tech) {
-                    const first = typeof offer.tech === 'string' ? JSON.parse(offer.tech) : offer.tech;
-                    techTags = typeof first === 'string' ? JSON.parse(first) : first;
+                    const first = typeof offer.tech === "string" ? JSON.parse(offer.tech) : offer.tech;
+                    techTags = typeof first === "string" ? JSON.parse(first) : first;
                   }
                 } catch (e) {
                   techTags = [];
@@ -234,14 +218,15 @@ const Profile = () => {
                     </p>
 
                     <div className="flex flex-wrap gap-2">
-                      {Array.isArray(techTags) && techTags.map((t, idx) => (
-                        <span
-                          key={idx}
-                          className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm antialiased"
-                        >
-                          {t}
-                        </span>
-                      ))}
+                      {Array.isArray(techTags) &&
+                        techTags.map((t, idx) => (
+                          <span
+                            key={idx}
+                            className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm antialiased"
+                          >
+                            {t}
+                          </span>
+                        ))}
                     </div>
 
                     {offer.updated && (

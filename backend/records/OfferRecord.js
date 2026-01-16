@@ -99,7 +99,7 @@ class OfferRecord {
 
   static async getOneOffer(user_id) {
     const [data] = await pool.execute(
-      "SELECT `users`.`email`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `offers`.`id` = :id",
+      "SELECT `users`.`id` AS `user_id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `offers`.`id` = :id",
 
       {
         id: user_id,

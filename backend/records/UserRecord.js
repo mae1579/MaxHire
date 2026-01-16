@@ -102,6 +102,17 @@ class UserRecord {
     const [result] = await pool.execute("SELECT * FROM `users`");
     return result.map((elem) => new UserRecord(elem));
   }
+
+  static async getOneUser(user_id) {
+    const [data] = await pool.execute(
+      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo` FROM `users` WHERE `users`.`id` = :id",
+
+      {
+        id: user_id,
+      },
+    );
+    return data.length === 0 ? null : data;
+  }
 }
 
 module.exports = {
