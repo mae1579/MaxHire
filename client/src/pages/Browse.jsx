@@ -82,10 +82,21 @@ const Browse = () => {
             </button>
           </div>
 
-          <button disabled className="h-[58px] aspect-square flex items-center justify-center bg-[#070709] border border-[#1f1f22] rounded-2xl text-zinc-500 cursor-not-allowed relative">
-            <SlidersHorizontal size={18} />
-            <DollarSign size={12} className="absolute top-2.5 right-2.5" />
-          </button>
+          <div className="relative group">
+            <button
+              disabled
+              className="h-[58px] aspect-square flex items-center justify-center bg-[#070709] border border-[#1f1f22] rounded-2xl text-zinc-500  cursor-not-allowed transition-all duration-200"
+            >
+              <SlidersHorizontal size={18} />
+              <DollarSign
+                size={12}
+                className="absolute top-2.5 right-2.5 text-zinc-500"
+              />
+            </button>
+            <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#18181b] text-zinc-300 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-[#3f3f46] shadow-2xl z-50">
+              Funkcja Premium
+            </span>
+          </div>
         </div>
       </div>
 
