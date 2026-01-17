@@ -22,8 +22,16 @@ const LoginForm = () => {
 
   const API_URL = "http://localhost:3000";
 
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    if (!isEmailValid) {
+      toast.error("Nieprawidłowy adres email");
+      return;
+    }
+
     setIsLoading(true);
     try {
       await axios.post(
@@ -53,6 +61,12 @@ const LoginForm = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!isEmailValid) {
+      toast.error("Nieprawidłowy adres email");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await axios.post(
@@ -232,6 +246,7 @@ const LoginForm = () => {
             id="password"
             name="password"
             type="password"
+            minLength={8}
             placeholder="Stwórz silne hasło"
             required
             className="w-full p-3 mb-8 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all disabled:opacity-50"
