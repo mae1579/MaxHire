@@ -9,9 +9,9 @@ const offerRouter = express.Router();
 offerRouter.get("/user/:id", tokenAuth, async (req, res) => {
   const { id } = req.params;
   const data = await OfferRecord.findOneByUserId(id);
-  if (!data) {
-    throw new ValidationError("Uzytkownik nie dodal jeszcze zadnych ofert");
-  }
+  // if (!data) {
+  //   throw new ValidationError("Uzytkownik nie dodal jeszcze zadnych ofert");
+  // }
   res.status(200).json({ message: data || [] });
 });
 //Wyswietlenie jednej konkretnej oferty
