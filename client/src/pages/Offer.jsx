@@ -14,6 +14,7 @@ const Offer = () => {
   const [showPhone, setShowPhone] = useState(false);
 
   const isOwner = loggedInUser && (loggedInUser.id === offer?.user_id);
+  const isAdmin = loggedInUser && (loggedInUser.role === "admin");
 
   useEffect(() => {
     setLoading(true);
@@ -178,7 +179,7 @@ const Offer = () => {
                 </div>
               </div>
 
-              {isOwner ? (
+              {isOwner || isAdmin ? (
                 <Link 
                   to={`/editOffer/${id}`}
                   className="w-full bg-black text-white text-[13px] font-bold uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-zinc-800 transition-all text-center flex items-center justify-center shadow-xl cursor-pointer"
