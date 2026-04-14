@@ -6,7 +6,7 @@ const { urlencoded } = require("express");
 const { registerRouter } = require("./routers/registerRouter");
 const { handleError } = require("./utils/handleErrors");
 const { loginRouter } = require("./routers/loginRouter");
-const { homeRouterUser } = require("./routers/homeRouterUser");
+const { adminCenterRouter } = require("./routers/adminCenterRouter");
 const { logoutRouter } = require("./routers/logoutRouter");
 const { addOfferRouter } = require("./routers/addOfferRouter");
 const { offersRouter } = require("./routers/offersRouter");
@@ -32,7 +32,7 @@ app.use(cookieParser());
 
 app.use("/register", registerRouter);
 app.use("/login", loginRouter);
-app.use("/homeUser", homeRouterUser);
+app.use("/admin", adminCenterRouter);
 app.use("/edit/user", editUserRouter);
 app.use("/logout", logoutRouter);
 app.use("/addOffer", addOfferRouter);

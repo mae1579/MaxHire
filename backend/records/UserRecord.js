@@ -71,10 +71,7 @@ class UserRecord {
     });
   }
 
-  async delete(id) {
-    if (!this.id) {
-      throw new ValidationError("Aby usunąc użytkownika wymagane jest jego id");
-    }
+  async delete() {
     await pool.execute("DELETE FROM `users` WHERE `id` = :id", {
       id: this.id,
     });

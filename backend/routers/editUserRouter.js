@@ -17,14 +17,17 @@ editUserRouter.patch("/", tokenAuth, async (req, res) => {
   if (finduser.id !== req.user.id)
     throw new ValidationError("Uzytkownik zalogowany jest nieprawidlowy");
 
-  const newUser = new UserRecord({
-    ...finduser,
-    email: req.body.email || finduser.email,
-    phone: req.body.phone || finduser.phone,
-  });
+  finduser.email = req.body.email ?? finduser.email;
+  finduser.phone = req.body.phone ?? finduser.phone;
+
+  // const newUser = new UserRecord({
+  //   ...finduser,
+  //   email: req.body.email || finduser.email,
+  //   phone: req.body.phone || finduser.phone,
+  // });
 
   try {
-    await newUser.update();
+    await finduser.update();
     res.status(200).json({ message: "Dane profilowe zostały zaaktualizowane" });
   } catch (error) {
     res.status(400).json({ message: "Błąd aktualizacji" });
