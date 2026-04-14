@@ -27,9 +27,8 @@ const Profile = () => {
   const [editForm, setEditForm] = useState({ email: "", phone: "" });
   const fileInputRef = useRef(null);
 
-  const isOwner =
-    loggedInUser &&
-    (loggedInUser.id === id || loggedInUser._id === id);
+  const isOwner = loggedInUser && (loggedInUser.id === id);
+  const isAdmin = loggedInUser && (loggedInUser.role === "admin");
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email);
   const isPhoneValid = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(editForm.phone);
@@ -179,7 +178,7 @@ const Profile = () => {
               </div>
             </div>
           </div>
-          {isOwner && (
+          {(isOwner || isAdmin) && (
             <div className="flex items-center gap-3">
               {isEditing ? (
                 <>
