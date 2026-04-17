@@ -6,6 +6,9 @@ const { transporter } = require("../utils/gmailconfig");
 const { mailOptions } = require("../utils/szablonPassword");
 const { ValidationError } = require("../utils/handleErrors");
 const { OfferRecord } = require("../records/OfferRecord");
+const multer = require("multer");
+const storage = require("../utils/cloudinaryConfig");
+const upload = multer({ storage: storage });
 
 const adminCenterRouter = express.Router();
 
@@ -68,21 +71,47 @@ adminCenterRouter.get(
   },
 );
 
-// Edycja ofert danego użytkownika
+// Usuwanie ofert danego użytkownika
+adminCenterRouter.delete(
+  "/remove/offer/:id",
+  tokenAuth,
+  authorizeRoles(["admin"]),
+  async (req, res) => {
+    const offer_id = req.params.id;
+    const findOffer = await OfferRecord.findOneByIdOffer(offer_id);
 
-// Edycja danych użytkownika - na chwile obecna bez mozliwoscia zmiany zdjęcia.
+    if (!findOffer) {
+      throw new ValidationError("Ogloszenie nie istnieje w bazie");
+    }
+    await findOffer.delete();
+    res
+      .status(200)
+      .json({ message: `Zgloszenie o id: ${offer_id} zostalo usuniete` });
+  },
+);
+
+// Edycja danych użytkownika
 adminCenterRouter.patch(
   "/update/user/:userId",
   tokenAuth,
   authorizeRoles(["admin"]),
+  upload.single("profilePhoto"),
   async (req, res) => {
     const findUser = await UserRecord.findById(req.params.userId);
     if (!findUser) res.status(404).json({ message: "uzytkownik nie istnieje" });
+    if (req.file) {
+      try {
+        const photoUrl = req.file.path;
+        await UserRecord.updateProfilePhoto(findUser.id, photoUrl.toString());
+      } catch (err) {
+        throw new ValidationError("Nie udalo sie zapisac zdjecia");
+      }
+    }
+    const saveUser = await UserRecord.findById(req.params.userId);
     const changeUser = new UserRecord({
-      ...findUser,
+      ...saveUser,
       ...req.body,
       id: findUser.id,
-      photo: findUser.photo,
     });
     try {
       await changeUser.update();
