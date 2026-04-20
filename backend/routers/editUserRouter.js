@@ -10,8 +10,8 @@ const { createMailOptions } = require("../utils/szablonPassword");
 const bcrypt = require("bcrypt");
 
 //Aktualizacja danych (email i numer) zalogowanego użytkownika.
-editUserRouter.patch("/", tokenAuth, async (req, res) => {
-  const finduser = await UserRecord.findById(req.user.id);
+editUserRouter.patch("/:id", tokenAuth, async (req, res) => {
+  const finduser = await UserRecord.findById(req.params.id);
 
   if (!finduser) throw new ValidationError("uzytkownik nie istnieje");
   if (finduser.id !== req.user.id)
@@ -19,12 +19,6 @@ editUserRouter.patch("/", tokenAuth, async (req, res) => {
 
   finduser.email = req.body.email ?? finduser.email;
   finduser.phone = req.body.phone ?? finduser.phone;
-
-  // const newUser = new UserRecord({
-  //   ...finduser,
-  //   email: req.body.email || finduser.email,
-  //   phone: req.body.phone || finduser.phone,
-  // });
 
   try {
     await finduser.update();

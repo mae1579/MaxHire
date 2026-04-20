@@ -13,6 +13,7 @@ import {
   Plus,
   Check,
   X,
+  FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -26,6 +27,7 @@ const Profile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editForm, setEditForm] = useState({ email: "", phone: "" });
   const fileInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
 
   const isOwner = loggedInUser && (loggedInUser.id === id);
   const isAdmin = loggedInUser && (loggedInUser.role === "admin");
@@ -65,12 +67,16 @@ const handleUpdateProfile = async () => {
     if (!canSave) return;
     setIsSubmitting(true);
     try {
-      const res = await axios.patch(`http://localhost:3000/edit/user/${id}`, editForm, { withCredentials: true });
-      const updated = { ...profile, ...editForm };
+      const res = isAdmin && !isOwner ? 
+        await axios.patch(`http://localhost:3000/admin/update/user/${id}`, editForm, { withCredentials: true })
+        : await axios.patch(`http://localhost:3000/edit/user/${id}`, editForm, { withCredentials: true })
+      
+      const updated = { ...profile, email: editForm.email, phone: editForm.phone };
       setProfile(updated); 
       if (isOwner) {
-        setUser(updated);
-        localStorage.setItem("user", JSON.stringify(updated));
+        const userToUpdate = { ...loggedInUser, email: editForm.email, phone: editForm.phone };
+        setUser(userToUpdate);
+        localStorage.setItem("user", JSON.stringify(userToUpdate));
       }
       setIsEditing(false);
       toast.success(res.data.message || "Profil zaktualizowany");
@@ -109,6 +115,32 @@ const handleUpdateProfile = async () => {
     }
   };
 
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const data = new FormData();
+    data.append("cvFile", file);
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/register/registerAi/cv",
+        data,
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (response.data.data) {
+        setEditForm({
+          email: response.data.data.email || editForm.email,
+          phone: response.data.data.phone || editForm.phone,
+        });
+        toast.success("Dane z CV zostały wczytane");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Błąd przetwarzania CV");
+    }
+  };
+
   if (loading)
     return (
       <div className="flex items-center justify-center py-20 font-black uppercase italic tracking-widest text-zinc-900">
@@ -126,6 +158,7 @@ const handleUpdateProfile = async () => {
   return (
     <div className="text-zinc-950 pb-24 relative z-10">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+      <input type="file" ref={pdfInputRef} className="hidden" accept=".pdf" onChange={handlePdfUpload} />
 
       <div className="relative h-48 bg-white/10 border-b border-zinc-200 backdrop-blur-sm">
         <div className="absolute -bottom-16 left-6 md:left-16 lg:left-32">
@@ -197,6 +230,13 @@ const handleUpdateProfile = async () => {
                     className={`flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-3 rounded-xl font-bold transition-all shadow-sm uppercase text-xs cursor-pointer ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
                   >
                     <X className="w-4 h-4" /> Anuluj
+                  </button>
+                  <button 
+                    onClick={() => pdfInputRef.current.click()}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 bg-red-500 text-white px-4 py-3 rounded-xl font-bold transition-all shadow-sm uppercase text-xs cursor-pointer hover:bg-red-600 active:scale-95"
+                  >
+                    <FileText className="w-4 h-4" /> Użyj CV
                   </button>
                 </>
               ) : (

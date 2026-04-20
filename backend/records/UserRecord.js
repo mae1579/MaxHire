@@ -102,7 +102,7 @@ class UserRecord {
 
   static async getOneUser(user_id) {
     const [data] = await pool.execute(
-      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo` FROM `users` WHERE `users`.`id` = :id",
+      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `users`.`role` FROM `users` WHERE `users`.`id` = :id",
 
       {
         id: user_id,
