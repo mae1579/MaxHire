@@ -41,6 +41,9 @@ loginRouter.post("/", async (req, res, next) => {
 });
 
 
+//Logowanie alternatynwe za pomocą adres e-mail.
+
+
 module.exports = {
   loginRouter,
 };

@@ -9,24 +9,8 @@ const jwt = require("jsonwebtoken");
 const { createMailOptions } = require("../utils/szablonPassword");
 const bcrypt = require("bcrypt");
 
-//Aktualizacja danych (email i numer) zalogowanego użytkownika.
-editUserRouter.patch("/:id", tokenAuth, async (req, res) => {
-  const finduser = await UserRecord.findById(req.params.id);
 
-  if (!finduser) throw new ValidationError("uzytkownik nie istnieje");
-  if (finduser.id !== req.user.id)
-    throw new ValidationError("Uzytkownik zalogowany jest nieprawidlowy");
 
-  finduser.email = req.body.email ?? finduser.email;
-  finduser.phone = req.body.phone ?? finduser.phone;
-
-  try {
-    await finduser.update();
-    res.status(200).json({ message: "Dane profilowe zostały zaaktualizowane" });
-  } catch (error) {
-    res.status(400).json({ message: "Błąd aktualizacji" });
-  }
-});
 
 //Zmiana Hasła 1 krok wysłanie maila weryfikacyjnego.:
 
@@ -38,7 +22,7 @@ editUserRouter.post("/forgetPassword", async (req, res) => {
     throw new ValidationError("Uzytkownik o takim e-mailu nie istnieje");
   }
   const token = jwt.sign({ id: finduser.id }, process.env.JWT_SECRET2, {
-    expiresIn: "1h",
+    expiresIn: "60s",
   });
 
   const link = `http://localhost:5173/recover/${token}`;
@@ -60,7 +44,12 @@ editUserRouter.post("/forgetPassword", async (req, res) => {
 // zmiana hasła 2 krok
 editUserRouter.patch("/changePassword", async (req, res) => {
   const data = req.body;
-  const decoded = jwt.verify(data.token, process.env.JWT_SECRET2);
+  let decoded;
+  try {
+    decoded = jwt.verify(data.token, process.env.JWT_SECRET2);
+  }catch(err){
+    return res.status(403).json({message:"Link wygasl !"});
+  }
   const userId = decoded.id;
   const hashedPassword = await bcrypt.hash(
     data.password,
@@ -80,6 +69,25 @@ editUserRouter.patch("/changePassword", async (req, res) => {
     throw new ValidationError(
       ` Wystapil blad podczas aktualizacji hasla ${error}`,
     );
+  }
+});
+
+//Aktualizacja danych (email i numer) zalogowanego użytkownika.
+editUserRouter.patch("/:id", tokenAuth, async (req, res) => {
+  const finduser = await UserRecord.findById(req.params.id);
+
+  if (!finduser) throw new ValidationError("uzytkownik nie istnieje");
+  if (finduser.id !== req.user.id)
+    throw new ValidationError("Uzytkownik zalogowany jest nieprawidlowy");
+
+  finduser.email = req.body.email ?? finduser.email;
+  finduser.phone = req.body.phone ?? finduser.phone;
+
+  try {
+    await finduser.update();
+    res.status(200).json({ message: "Dane profilowe zostały zaaktualizowane" });
+  } catch (error) {
+    res.status(400).json({ message: "Błąd aktualizacji" });
   }
 });
 

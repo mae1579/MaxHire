@@ -1,5 +1,6 @@
 const { transporter } = require("./gmailconfig");
-const createMailOptions = (userEmail, link) => {
+const
+    createMailOptions = (userEmail, link) => {
   return {
     from: process.env.GMAIL_APP_EMAIL,
     to: userEmail,
