@@ -71,6 +71,10 @@ const App = () => {
             element={user ? <Navigate to="/" replace /> : <Login />}
           />
           <Route
+            path="/login/:token"
+            element={user ? <Navigate to="/" replace /> : <Login />}
+          />
+          <Route
             path="/recover"
             element={user ? <Navigate to="/" replace /> : <Recover />}
           />

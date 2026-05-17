@@ -54,7 +54,7 @@ loginRouter.post("/email/loginuser", async(req,res) => {
   }
   const tokenPayload = { id: findUser.id, role: findUser.role };
   const token = jwt.sign(tokenPayload, process.env.JWT_EMAILLOGIN, {
-    expiresIn: "60s",
+    expiresIn: "5m",
   });
 
   const link = `http://localhost:5173/login/${token}`;
