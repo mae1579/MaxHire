@@ -20,6 +20,9 @@ class OfferRecord {
       throw new ValidationError("User ID is required");
     }
 
+    // Obecna data przy każdym nowym elemencie
+    this.updated = Math.floor(Date.now() / 1000);
+
     await pool.execute(
       "INSERT INTO `offers` (`id`, `title`,`company`, `description`, `tech`, `links`,`updated` , `user_id`) VALUES (:id,:title,:company, :description, :tech, :links, :updated,  :user_id) ",
       {
@@ -68,7 +71,7 @@ class OfferRecord {
       params.search = `%${search.toLowerCase()}%`;
     }
 
-    sql += " LIMIT :limit OFFSET :offset";
+    sql += " ORDER BY `offers`.`updated` DESC LIMIT :limit OFFSET :offset";
 
     const [data] = await pool.execute(sql, params);
 
@@ -99,13 +102,13 @@ class OfferRecord {
   }
 
   static async findAll() {
-    const [data] = await pool.execute("SELECT * FROM `offers` ");
+    const [data] = await pool.execute("SELECT * FROM `offers` ORDER BY `updated` DESC");
     return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
   }
 
   static async findOneByUserId(user_id) {
     const [data] = await pool.execute(
-      "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `user_id` = :id",
+      "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id` WHERE `user_id` = :id ORDER BY `offers`.`updated` DESC",
       {
         id: user_id,
       },

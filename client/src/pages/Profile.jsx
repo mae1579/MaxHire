@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import formatUpdater from '../utils/DateFormatter';
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 
@@ -305,7 +306,7 @@ const handleUpdateProfile = async () => {
                     </div>
                     {offer.updated && (
                       <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-2 text-[10px] text-zinc-400 font-black uppercase tracking-widest">
-                        <Calendar className="w-3 h-3" /> {offer.updated}
+                        <Calendar className="w-3 h-3" /> {formatUpdater(offer.updated)}
                       </div>
                     )}
                   </div>
