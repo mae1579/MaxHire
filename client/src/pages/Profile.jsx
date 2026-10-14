@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import formatUpdater from '../utils/DateFormatter';
+import CvBuilder from "../components/cv/CvBuilder";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 
@@ -27,6 +28,7 @@ const Profile = () => {
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isCvOpen, setIsCvOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editForm, setEditForm] = useState({ email: "", phone: "" });
   const fileInputRef = useRef(null);
@@ -159,7 +161,7 @@ const handleUpdateProfile = async () => {
     );
 
   return (
-    <div className="text-zinc-950 pb-24 relative z-10">
+    <div className="text-zinc-950 pb-24 relative z-10 overflow-x-hidden">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
       <input type="file" ref={pdfInputRef} className="hidden" accept=".pdf" onChange={handlePdfUpload} />
 
@@ -188,7 +190,7 @@ const handleUpdateProfile = async () => {
       <div className="mt-20 px-6 md:px-16 lg:px-32 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-black tracking-tight uppercase italic text-zinc-900">
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight uppercase italic text-zinc-900 break-words">
               {profile.name} {profile.surname}
             </h1>
             <div className="flex flex-wrap gap-4 mt-3 text-zinc-700 font-bold">
@@ -197,7 +199,7 @@ const handleUpdateProfile = async () => {
                 {isEditing ? (
                   <input 
                     disabled={isSubmitting}
-                    className="bg-transparent outline-none border-b border-zinc-300 focus:border-zinc-900 min-w-[180px]"
+                    className="bg-transparent outline-none border-b border-zinc-300 focus:border-zinc-900 w-full min-w-0 sm:min-w-[180px]"
                     value={editForm.email}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                   />
@@ -208,7 +210,7 @@ const handleUpdateProfile = async () => {
                 {isEditing ? (
                   <input 
                     disabled={isSubmitting}
-                    className="bg-transparent outline-none border-b border-zinc-300 focus:border-zinc-900 min-w-[120px]"
+                    className="bg-transparent outline-none border-b border-zinc-300 focus:border-zinc-900 w-full min-w-0 sm:min-w-[120px]"
                     value={editForm.phone}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   />
@@ -217,7 +219,7 @@ const handleUpdateProfile = async () => {
             </div>
           </div>
           {(isOwner || isAdmin) && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
               {isEditing ? (
                 <>
                   <button 
@@ -243,12 +245,22 @@ const handleUpdateProfile = async () => {
                   </button>
                 </>
               ) : (
-                <button 
-                  onClick={() => setIsEditing(true)}
-                  className="bg-zinc-950 text-white px-8 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95 cursor-pointer"
-                >
-                  Edytuj Profil
-                </button>
+                <>
+                  {isOwner && (
+                    <button
+                      onClick={() => setIsCvOpen(true)}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-white transition-all shadow-sm active:scale-95 cursor-pointer"
+                    >
+                      <FileText className="w-5 h-5 shrink-0" /> Stwórz CV
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setIsEditing(true)}
+                    className="flex-1 sm:flex-none bg-zinc-950 text-white px-4 sm:px-8 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95 cursor-pointer"
+                  >
+                    Edytuj Profil
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -320,6 +332,9 @@ const handleUpdateProfile = async () => {
           </div>
         </section>
       </div>
+      {isCvOpen && (
+        <CvBuilder profile={profile} onClose={() => setIsCvOpen(false)} />
+      )}
     </div>
   );
 };
