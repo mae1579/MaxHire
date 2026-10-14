@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Camera, Download, FileText, Plus, User, X } from "lucide-react";
+import { Camera, Download, FileText, Plus, Upload, User, X } from "lucide-react";
 import toast from "react-hot-toast";
-import { downloadCvPdf } from "../../utils/downloadCvPdf";
+import axios from "axios";
+import { buildCvPdfBlob, downloadCvPdf } from "../../utils/downloadCvPdf";
+import { pickCvUrl, setSavedCvMeta } from "../../utils/cvStorage";
+
+const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-gray-50 border border-transparent focus:border-black focus:bg-white outline-none transition-all text-sm";
@@ -345,11 +349,12 @@ const ScaledPreview = ({ form }) => {
   );
 };
 
-const CvBuilder = ({ profile, onClose }) => {
+const CvBuilder = ({ profile, onClose, onSaved }) => {
   const previewRef = useRef(null);
   const photoInputRef = useRef(null);
   const storageKey = `cv-draft-${profile?.id || "guest"}`;
   const [downloading, setDownloading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(() => {
     const initial = buildInitialForm(profile);
     try {
@@ -433,6 +438,14 @@ const CvBuilder = ({ profile, onClose }) => {
     reader.readAsDataURL(file);
   };
 
+  const cvFilename = () => {
+    const slug = form.fullName
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-ąćęłńóśźż]/gi, "");
+    return `CV-${slug || "maxhire"}.pdf`;
+  };
+
   const handleDownload = async () => {
     if (!form.fullName.trim()) {
       toast.error("Podaj imię i nazwisko");
@@ -441,17 +454,54 @@ const CvBuilder = ({ profile, onClose }) => {
     setDownloading(true);
     const toastId = toast.loading("Generowanie CV...");
     try {
-      const slug = form.fullName
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-ąćęłńóśźż]/gi, "");
-      await downloadCvPdf(previewRef.current, `CV-${slug || "maxhire"}.pdf`);
+      await downloadCvPdf(previewRef.current, cvFilename());
       toast.success("CV pobrane", { id: toastId });
     } catch (error) {
       console.error(error);
       toast.error("Nie udało się wygenerować PDF", { id: toastId });
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleSaveToProfile = async () => {
+    if (!form.fullName.trim()) {
+      toast.error("Podaj imię i nazwisko");
+      return;
+    }
+    setSaving(true);
+    const toastId = toast.loading("Zapisywanie CV na profil...");
+    try {
+      const blob = await buildCvPdfBlob(previewRef.current);
+      const filename = cvFilename();
+      const payload = { ...form };
+      if (typeof payload.photo === "string" && payload.photo.startsWith("data:")) {
+        payload.photo = profile?.photo || "";
+      }
+      const data = new FormData();
+      data.append("cvFile", blob, filename);
+      data.append("cvData", JSON.stringify(payload));
+      data.append("userId", profile?.id || "");
+
+      const response = await axios.post(`${API_URL}/backend/profile/cv`, data, {
+        withCredentials: true,
+      });
+      const cvUrl = pickCvUrl(response.data);
+      const meta = { url: cvUrl, savedAt: Date.now() };
+      setSavedCvMeta(profile?.id, meta);
+      onSaved?.(meta);
+      toast.success(response.data?.message || "CV zapisane na profilu", {
+        id: toastId,
+      });
+      onClose();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || "Nie udało się zapisać CV na backendzie",
+        { id: toastId },
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -481,12 +531,21 @@ const CvBuilder = ({ profile, onClose }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <button
+                type="button"
+                onClick={handleSaveToProfile}
+                disabled={downloading || saving}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-zinc-950 text-white px-4 sm:px-5 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+              >
+                <Upload className="w-4 h-4 shrink-0" />
+                {saving ? "Zapisywanie..." : "Zapisz na profil"}
+              </button>
               <button
                 type="button"
                 onClick={handleDownload}
-                disabled={downloading}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-zinc-950 text-white px-4 sm:px-5 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                disabled={downloading || saving}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 sm:px-5 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-white transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs"
               >
                 <Download className="w-4 h-4 shrink-0" />
                 {downloading ? "Generowanie..." : "Pobierz PDF"}

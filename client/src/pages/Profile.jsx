@@ -14,10 +14,12 @@ import {
   Check,
   X,
   FileText,
+  Download,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import formatUpdater from '../utils/DateFormatter';
 import CvBuilder from "../components/cv/CvBuilder";
+import { getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 
@@ -29,6 +31,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isCvOpen, setIsCvOpen] = useState(false);
+  const [savedCv, setSavedCv] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editForm, setEditForm] = useState({ email: "", phone: "" });
   const fileInputRef = useRef(null);
@@ -44,15 +47,29 @@ const Profile = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [profileRes, offersRes] = await Promise.all([
+      const [profileRes, offersRes, cvRes] = await Promise.all([
         axios.get(`${API_URL}/backend/profile/getProfile/${id}`, { withCredentials: true }),
-        axios.get(`${API_URL}/backend/offer/user/${id}`, { withCredentials: true })
+        axios.get(`${API_URL}/backend/offer/user/${id}`, { withCredentials: true }),
+        axios
+          .get(`${API_URL}/backend/profile/cv/${id}`, { withCredentials: true })
+          .catch(() => null),
       ]);
 
       if (profileRes.data.message && profileRes.data.message.length > 0) {
         const userData = profileRes.data.message[0];
         setProfile(userData);
         setEditForm({ email: userData.email, phone: userData.phone || "" });
+        const fromProfile = pickCvUrl(userData);
+        const fromCvRoute = pickCvUrl(cvRes?.data);
+        const fromLocal = getSavedCvMeta(id);
+        const url = fromProfile || fromCvRoute || fromLocal?.url || "";
+        if (url || fromLocal) {
+          const meta = { url, savedAt: fromLocal?.savedAt || Date.now() };
+          setSavedCv(meta);
+          if (url) setSavedCvMeta(id, meta);
+        } else {
+          setSavedCv(null);
+        }
       }
 
       const offersData = offersRes.data.message;
@@ -218,8 +235,26 @@ const handleUpdateProfile = async () => {
               </div>
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            {savedCv && !isEditing && (
+              <a
+                href={savedCv.url || undefined}
+                onClick={(e) => {
+                  if (savedCv.url) return;
+                  e.preventDefault();
+                  if (isOwner) setIsCvOpen(true);
+                  else toast.error("CV nie ma jeszcze publicznego linku");
+                }}
+                target={savedCv.url ? "_blank" : undefined}
+                rel={savedCv.url ? "noreferrer" : undefined}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-900 px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-50 transition-all shadow-sm active:scale-95 cursor-pointer"
+              >
+                <Download className="w-5 h-5 shrink-0" />
+                {isOwner ? "Twoje CV" : "Pobierz CV"}
+              </a>
+            )}
           {(isOwner || isAdmin) && (
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <>
               {isEditing ? (
                 <>
                   <button 
@@ -251,7 +286,8 @@ const handleUpdateProfile = async () => {
                       onClick={() => setIsCvOpen(true)}
                       className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-white transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
-                      <FileText className="w-5 h-5 shrink-0" /> Stwórz CV
+                      <FileText className="w-5 h-5 shrink-0" />
+                      {savedCv ? "Edytuj CV" : "Stwórz CV"}
                     </button>
                   )}
                   <button 
@@ -262,8 +298,9 @@ const handleUpdateProfile = async () => {
                   </button>
                 </>
               )}
-            </div>
+              </>
           )}
+          </div>
         </div>
 
         <div className="h-px bg-zinc-200 my-12 w-full"></div>
@@ -333,7 +370,11 @@ const handleUpdateProfile = async () => {
         </section>
       </div>
       {isCvOpen && (
-        <CvBuilder profile={profile} onClose={() => setIsCvOpen(false)} />
+        <CvBuilder
+          profile={profile}
+          onClose={() => setIsCvOpen(false)}
+          onSaved={(meta) => setSavedCv(meta)}
+        />
       )}
     </div>
   );

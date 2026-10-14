@@ -38,7 +38,7 @@ async function renderCanvas(element) {
   });
 }
 
-export async function downloadCvPdf(element, filename) {
+async function createPdf(element) {
   if (!element) {
     throw new Error("Brak podglądu CV");
   }
@@ -61,18 +61,33 @@ export async function downloadCvPdf(element, filename) {
   const pageHeight = 297;
   const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
+  if (imgHeight <= pageHeight + 2) {
+    pdf.addImage(img, "PNG", 0, 0, pageWidth, Math.min(imgHeight, pageHeight));
+    return pdf;
+  }
+
   let heightLeft = imgHeight;
   let position = 0;
 
   pdf.addImage(img, "PNG", 0, position, pageWidth, imgHeight);
   heightLeft -= pageHeight;
 
-  while (heightLeft > 0) {
+  while (heightLeft > 2) {
     position = heightLeft - imgHeight;
     pdf.addPage();
     pdf.addImage(img, "PNG", 0, position, pageWidth, imgHeight);
     heightLeft -= pageHeight;
   }
 
+  return pdf;
+}
+
+export async function buildCvPdfBlob(element) {
+  const pdf = await createPdf(element);
+  return pdf.output("blob");
+}
+
+export async function downloadCvPdf(element, filename) {
+  const pdf = await createPdf(element);
   pdf.save(filename);
 }
