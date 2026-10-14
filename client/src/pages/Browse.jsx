@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from "axios";
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, DollarSign, Search } from 'lucide-react';
-import Listings from "../components/Listings";
+import Listings from "../components/offers/Listings";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 

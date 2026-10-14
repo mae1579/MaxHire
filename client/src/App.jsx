@@ -1,6 +1,6 @@
 import { Toaster } from "react-hot-toast";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -11,8 +11,8 @@ import Offer from "./pages/Offer";
 import Recover from "./pages/Recover";
 import CreateOffer from "./pages/CreateOffer";
 import { useAuth } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./components/routing/ProtectedRoute";
+import ScrollToTop from "./components/routing/ScrollToTop";
 import AdminPanel from "./pages/AdminPanel";
 
 const App = () => {

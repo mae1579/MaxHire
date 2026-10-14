@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { FileText } from "lucide-react";
 
