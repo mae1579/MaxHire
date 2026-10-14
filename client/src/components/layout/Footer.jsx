@@ -1,4 +1,5 @@
 import React from 'react';
+import ContributorsEgg from './ContributorsEgg';
 
 const Footer = () => {
   return (
@@ -9,6 +10,7 @@ const Footer = () => {
           <a href="" className="hover:text-white transition-colors">Prywatność</a>
           <a href="" className="hover:text-white transition-colors">Regulamin</a>
         </div>
+        <ContributorsEgg />
       </div>
     </footer>
   );

@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { buildCvPdfBlob, downloadCvPdf } from "../../utils/downloadCvPdf";
 import { pickCvUrl, setSavedCvMeta } from "../../utils/cvStorage";
+import CvPreview, { CV_TEMPLATES } from "./CvPreview";
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 
@@ -58,250 +59,8 @@ const buildInitialForm = (profile) => ({
   courses: [emptyCourse()],
   languages: "",
   interests: "",
+  template: "classic",
 });
-
-const CvPreview = ({ form, previewRef }) => {
-  const skills = form.skills
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const languages = form.languages
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const jobs = (form.experience || []).filter(
-    (j) => j.role || j.company || j.description,
-  );
-  const schools = (form.education || []).filter((s) => s.degree || s.school);
-  const projects = (form.projects || []).filter(
-    (p) => p.name || p.description || p.link,
-  );
-  const courses = (form.courses || []).filter((c) => c.name || c.issuer);
-  const links = [form.website, form.github, form.linkedin].filter(Boolean);
-
-  return (
-    <div
-      ref={previewRef}
-      className="bg-white text-zinc-900 w-[794px] min-h-[1123px] p-10 box-border break-words"
-    >
-      <div className="border-b-2 border-zinc-950 pb-6 mb-6 flex gap-6 items-start">
-        {form.photo ? (
-          <img
-            src={form.photo}
-            alt=""
-            {...(form.photo.startsWith("http")
-              ? { crossOrigin: "anonymous" }
-              : {})}
-            className="w-24 h-24 rounded-2xl object-cover shrink-0 border-2 border-zinc-950 bg-zinc-100"
-          />
-        ) : null}
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 mb-2">
-            MaxHire CV
-          </p>
-          <h1 className="text-4xl font-black uppercase italic tracking-tight leading-tight break-words">
-            {form.fullName || "Imię i nazwisko"}
-          </h1>
-          {form.title && (
-            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-zinc-500">
-              {form.title}
-            </p>
-          )}
-          {form.availability && (
-            <p className="mt-1 text-xs font-semibold text-zinc-500">
-              {form.availability}
-            </p>
-          )}
-          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-zinc-600">
-            {form.email && <span>{form.email}</span>}
-            {form.phone && <span>{form.phone}</span>}
-            {form.location && <span>{form.location}</span>}
-            {links.map((link) => (
-              <span key={link} className="break-all">
-                {link}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {form.summary && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-2 underline decoration-zinc-300 underline-offset-4">
-            O mnie
-          </h2>
-          <p className="text-sm leading-relaxed font-medium text-zinc-700 whitespace-pre-wrap">
-            {form.summary}
-          </p>
-        </section>
-      )}
-
-      {skills.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Umiejętności
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
-              <span
-                key={skill}
-                className="text-[9px] font-black bg-zinc-950 text-white px-2.5 py-1 rounded-md uppercase tracking-widest"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {jobs.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Doświadczenie
-          </h2>
-          <div className="space-y-4">
-            {jobs.map((job, idx) => (
-              <div key={idx} className="min-w-0">
-                <div className="flex justify-between gap-4 items-baseline">
-                  <p className="font-black text-sm uppercase tracking-tight break-words min-w-0">
-                    {job.role || "Stanowisko"}
-                  </p>
-                  {job.period && (
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">
-                      {job.period}
-                    </p>
-                  )}
-                </div>
-                {job.company && (
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-0.5">
-                    {job.company}
-                  </p>
-                )}
-                {job.description && (
-                  <p className="text-sm text-zinc-700 mt-1 leading-relaxed whitespace-pre-wrap">
-                    {job.description}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {schools.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Wykształcenie
-          </h2>
-          <div className="space-y-3">
-            {schools.map((school, idx) => (
-              <div key={idx} className="flex justify-between gap-4">
-                <div>
-                  <p className="font-black text-sm uppercase tracking-tight">
-                    {school.degree || "Kierunek"}
-                  </p>
-                  {school.school && (
-                    <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
-                      {school.school}
-                    </p>
-                  )}
-                </div>
-                {school.period && (
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">
-                    {school.period}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {projects.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Projekty
-          </h2>
-          <div className="space-y-4">
-            {projects.map((project, idx) => (
-              <div key={idx} className="min-w-0">
-                <div className="flex justify-between gap-4 items-baseline">
-                  <p className="font-black text-sm uppercase tracking-tight break-words">
-                    {project.name || "Projekt"}
-                  </p>
-                  {project.link && (
-                    <p className="text-[10px] font-bold text-zinc-400 break-all shrink-0 max-w-[40%]">
-                      {project.link}
-                    </p>
-                  )}
-                </div>
-                {project.tech && (
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-0.5">
-                    {project.tech}
-                  </p>
-                )}
-                {project.description && (
-                  <p className="text-sm text-zinc-700 mt-1 leading-relaxed whitespace-pre-wrap">
-                    {project.description}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {courses.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Kursy i certyfikaty
-          </h2>
-          <div className="space-y-3">
-            {courses.map((course, idx) => (
-              <div key={idx} className="flex justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="font-black text-sm uppercase tracking-tight">
-                    {course.name || "Kurs"}
-                  </p>
-                  {course.issuer && (
-                    <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
-                      {course.issuer}
-                    </p>
-                  )}
-                </div>
-                {course.year && (
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">
-                    {course.year}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {languages.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Języki
-          </h2>
-          <p className="text-sm font-semibold text-zinc-700">
-            {languages.join(" · ")}
-          </p>
-        </section>
-      )}
-
-      {form.interests && (
-        <section>
-          <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-950 mb-3 underline decoration-zinc-300 underline-offset-4">
-            Zainteresowania
-          </h2>
-          <p className="text-sm font-semibold text-zinc-700">{form.interests}</p>
-        </section>
-      )}
-    </div>
-  );
-};
 
 const PAGE_W = 794;
 const PAGE_H = 1123;
@@ -369,6 +128,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
         projects: parsed.projects?.length ? parsed.projects : initial.projects,
         courses: parsed.courses?.length ? parsed.courses : initial.courses,
         photo: parsed.photo || initial.photo,
+        template: parsed.template || initial.template,
       };
     } catch {
       return initial;
@@ -565,6 +325,37 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
               className="p-4 sm:p-6 md:p-8 space-y-8 border-b lg:border-b-0 lg:border-r border-zinc-200 lg:overflow-y-auto lg:h-full min-w-0"
               onSubmit={(e) => e.preventDefault()}
             >
+              <section>
+                <p className={labelClass}>Szablon CV</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {CV_TEMPLATES.map((tpl) => {
+                    const active = (form.template || "classic") === tpl.id;
+                    return (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => updateField("template", tpl.id)}
+                        className={`text-left rounded-2xl border p-3 cursor-pointer transition-all ${
+                          active
+                            ? "border-zinc-950 bg-white shadow-sm"
+                            : "border-zinc-200 bg-gray-50 hover:bg-white"
+                        }`}
+                      >
+                        <span
+                          className={`block h-2 w-10 rounded-full mb-2 ${tpl.swatch}`}
+                        />
+                        <span className="block text-xs font-black uppercase tracking-tighter">
+                          {tpl.label}
+                        </span>
+                        <span className="block text-[10px] text-zinc-400 mt-0.5">
+                          {tpl.hint}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
               <section>
                 <p className={labelClass}>Zdjęcie</p>
                 <input
