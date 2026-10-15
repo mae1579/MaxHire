@@ -25,11 +25,12 @@ editUserRouter.post("/forgetPassword", async (req, res) => {
     expiresIn: "60s",
   });
 
-  const link = `http://localhost:5173/recover/${token}`;
+  const link = `http://127.0.0.1:5173/recover/${token}`;
 
   const mailbody = createMailOptions(userMail, link);
 
   try {
+
     await transporter.sendMail(mailbody);
     res
       .status(200)

@@ -1,3 +1,5 @@
+// PRawdopodbnie do wyrzucenia przez backend. Nigdzie nie jest uzywane !
+
 const { transporter } = require("./gmailconfig");
 const mailOptionsE = {
   from: process.env.GMAIL_APP_EMAIL,

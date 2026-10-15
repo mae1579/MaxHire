@@ -1,18 +1,18 @@
 const { transporter } = require("./gmailconfig");
-const
-    createMailOptions = (userEmail, link) => {
-  return {
-    from: process.env.GMAIL_APP_EMAIL,
-    to: userEmail,
-    subject: "Instrukcja zmiany hasła w systemie MaxHire",
-    link: "",
-    html: `
+const createMailOptions = (userEmail, link) => {
+    return {
+        from: process.env.GMAIL_APP_EMAIL,
+        to: userEmail,
+        subject: "Instrukcja zmiany hasła w systemie MaxHire",
+        // 1. DODANE: Wersja tekstowa (niezbędna dla filtrów antyspamowych Google)
+        text: `Otrzymaliśmy prośbę o zresetowanie hasła w systemie MaxHire. Aby ustawić nowe hasło, skopiuj i wklej poniższy link w przeglądarce:\n\n${link}\n\nJeśli to nie Ty wysłałeś zapytanie, zignoruj tę wiadomość.`,
+        html: `
     <div style="background-color: #000000; color: #ffffff; padding: 40px; font-family: 'Segoe UI', Arial, sans-serif; text-align: center;">
         
         <h2 style="color: #ffffff; margin-bottom: 20px;">Zmiana hasła</h2>
         
         <p style="font-size: 16px; color: #dddddd; line-height: 1.6;">
-            Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta  w systemie <strong>MaxHire</strong>.
+            Otrzymaliśmy prośbę o zresetowanie hasła do Twojego konta w systemie <strong>MaxHire</strong>.
         </p>
 
         <div style="margin: 40px 0;">
@@ -33,8 +33,9 @@ const
         </div>
     </div>
     `,
-  };
+    };
 };
+
 
 //Uzycie wysylki.
 // const mailbody = {
