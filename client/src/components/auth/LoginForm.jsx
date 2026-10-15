@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import api from "../../api/client";
+import { isValidEmail } from "../../utils/validation";
 
 const LoginForm = ({ onSwitchToRegister }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,15 +22,9 @@ const LoginForm = ({ onSwitchToRegister }) => {
   const handleTokenLogin = async (token) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/backend/login/email/login`,
-        {
-          token,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await api.post("/login/email/login", {
+        token,
+      });
       setUser(
         response.data.user || {
           email: response.data.email,
@@ -50,7 +43,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
     }
   };
 
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isEmailValid = isValidEmail(email);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -62,16 +55,10 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/backend/login`,
-        {
-          email,
-          password,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await api.post("/login", {
+        email,
+        password,
+      });
       setUser(
         response.data.user || {
           email,
@@ -99,15 +86,9 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/backend/login/email/loginUser`,
-        {
-          email,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      await api.post("/login/email/loginUser", {
+        email,
+      });
       toast.success("Link logowania wysłany na email");
     } catch (error) {
       console.error(error);

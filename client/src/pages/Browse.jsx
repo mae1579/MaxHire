@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import axios from "axios";
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, DollarSign, Search } from 'lucide-react';
 import Listings from "../components/offers/Listings";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import BrowsePagination from "../components/offers/BrowsePagination";
+import api from "../api/client";
 
 const Browse = () => {
   const [offers, setOffers] = useState([]);
@@ -31,7 +30,7 @@ const Browse = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    axios.get(`${API_URL}/backend/offers?page=${page}&search=${searchTerm}`, { withCredentials: true })
+    api.get(`/offers?page=${page}&search=${searchTerm}`)
       .then(res => {
         if (res.data && Array.isArray(res.data.offers)) {
           setOffers(res.data.offers);
@@ -103,27 +102,13 @@ const Browse = () => {
       </div>
 
       {!loading && !error && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-6 my-5">
-          <button
-            onClick={() => { updateParams({ page: Math.max(page - 1, 1) }); window.scrollTo(0,0); }}
-            disabled={page === 1 || loading}
-            className="text-[10px] font-bold text-[#f4f4f5] bg-[#070709] border border-[#1f1f22] px-6 py-3 rounded-xl uppercase tracking-widest hover:bg-[#18181b] disabled:opacity-20 transition-all cursor-pointer"
-          >
-            Wstecz
-          </button>
-          
-          <span className="text-[#71717a] text-[11px] font-bold uppercase tracking-widest">
-            {page} / {totalPages}
-          </span>
-
-          <button
-            onClick={() => { updateParams({ page: Math.min(page + 1, totalPages) }); window.scrollTo(0,0); }}
-            disabled={page === totalPages || loading}
-            className="text-[10px] font-bold text-[#f4f4f5] bg-[#070709] border border-[#1f1f22] px-6 py-3 rounded-xl uppercase tracking-widest hover:bg-[#18181b] disabled:opacity-20 transition-all cursor-pointer"
-          >
-            Dalej
-          </button>
-        </div>
+        <BrowsePagination
+          page={page}
+          totalPages={totalPages}
+          loading={loading}
+          updateParams={updateParams}
+          className="my-5"
+        />
       )}
 
       <Listings 
@@ -134,27 +119,13 @@ const Browse = () => {
       />
 
       {!loading && !error && totalPages > 1 && offers?.length > 3 && (
-        <div className="flex justify-center items-center gap-6 my-3">
-          <button
-            onClick={() => { updateParams({ page: Math.max(page - 1, 1) }); window.scrollTo(0,0); }}
-            disabled={page === 1 || loading}
-            className="text-[10px] font-bold text-[#f4f4f5] bg-[#070709] border border-[#1f1f22] px-6 py-3 rounded-xl uppercase tracking-widest hover:bg-[#18181b] disabled:opacity-20 transition-all cursor-pointer"
-          >
-            Wstecz
-          </button>
-          
-          <span className="text-[#71717a] text-[11px] font-bold uppercase tracking-widest">
-            {page} / {totalPages}
-          </span>
-
-          <button
-            onClick={() => { updateParams({ page: Math.min(page + 1, totalPages) }); window.scrollTo(0,0); }}
-            disabled={page === totalPages || loading}
-            className="text-[10px] font-bold text-[#f4f4f5] bg-[#070709] border border-[#1f1f22] px-6 py-3 rounded-xl uppercase tracking-widest hover:bg-[#18181b] disabled:opacity-20 transition-all cursor-pointer"
-          >
-            Dalej
-          </button>
-        </div>
+        <BrowsePagination
+          page={page}
+          totalPages={totalPages}
+          loading={loading}
+          updateParams={updateParams}
+          className="my-3"
+        />
       )}
     </div>
   );

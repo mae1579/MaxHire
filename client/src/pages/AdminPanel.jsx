@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { User, Briefcase, Search } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import api from "../api/client";
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
@@ -16,12 +14,7 @@ const AdminPanel = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          `${API_URL}/backend/admin/userList`,
-          {
-            withCredentials: true,
-          },
-        );
+        const response = await api.get("/admin/userList");
         setUsers(response.data);
       } catch (error) {
         console.error("Błąd pobierania użytkowników:", error);
@@ -55,12 +48,7 @@ const AdminPanel = () => {
     if (!window.confirm("Czy na pewno chcesz usunąć tego użytkownika?")) return;
 
     try {
-      const response = await axios.delete(
-        `${API_URL}/backend/admin/remove/${id}`,
-        {
-          withCredentials: true,
-        },
-      );
+      const response = await api.delete(`/admin/remove/${id}`);
 
       setUsers((prevUsers) => {
         const updatedUsers = prevUsers.filter((user) => user.id !== id);

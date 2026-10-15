@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import api from "../api/client";
+import { parseLinks, parseTechTags } from "../utils/parseJsonField";
 
 const Offer = () => {
   const { id } = useParams();
@@ -20,7 +19,7 @@ const Offer = () => {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`${API_URL}/backend/offer/getOffer/${id}`, { withCredentials: true })
+    api.get(`/offer/getOffer/${id}`)
       .then(res => {
         const data = res.data.message;
         if (Array.isArray(data) && data.length > 0) {
@@ -36,10 +35,8 @@ const Offer = () => {
   if (loading) return <div className="max-w-4xl mx-auto px-6 py-20 text-black font-bold uppercase tracking-widest">Wczytywanie...</div>;
   if (error || !offer) return <div className="max-w-4xl mx-auto px-6 py-20 text-red-600 font-bold uppercase tracking-widest">{error}</div>;
 
-  const techTags = typeof offer.tech === 'string' 
-    ? JSON.parse(offer.tech.startsWith('"') ? JSON.parse(offer.tech) : offer.tech) 
-    : (offer.tech || []);
-  const links = offer.links ? (typeof offer.links === 'string' ? JSON.parse(offer.links) : offer.links) : {};
+  const techTags = parseTechTags(offer.tech);
+  const links = parseLinks(offer.links);
 
   return (
     <div className="w-full min-h-screen font-sans antialiased text-[#18181b] bg-white/30 backdrop-blur-sm">

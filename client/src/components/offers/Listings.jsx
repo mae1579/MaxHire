@@ -1,17 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import formatUpdater from '../../utils/DateFormatter';
+import { parseTechTags } from '../../utils/parseJsonField';
 
 const Listing = ({ id, title, company, description, tech, updated, photo: image, onTagClick }) => {
-  let techTags = [];
-  try {
-    if (tech) {
-      const first = typeof tech === 'string' ? JSON.parse(tech) : tech;
-      techTags = typeof first === 'string' ? JSON.parse(first) : first;
-    }
-  } catch (e) {
-    techTags = [];
-  }
+  const techTags = parseTechTags(tech);
 
   const finalImgSrc = (image && image.trim() !== "") ? image : "/favicon.svg";
 

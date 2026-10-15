@@ -1,21 +1,11 @@
-import {
-  LogIn,
-  LogOut,
-  MenuIcon,
-  PlusSquare,
-  CircleUser,
-  User,
-  ShieldAlert,
-  ChevronDown,
-} from "lucide-react";
+import { MenuIcon, User, ChevronDown } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "/logo.svg";
 import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
+import api from "../../api/client";
 import toast from "react-hot-toast";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import AccountMenuLinks from "./AccountMenuLinks";
 
 const Navbar = () => {
   const [mobileNavbarOpen, setMobileNavbarOpen] = useState(false);
@@ -48,11 +38,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `${API_URL}/backend/logout`,
-        {},
-        { withCredentials: true },
-      );
+      await api.post("/logout", {});
       setUser(null);
       localStorage.removeItem("user");
       toast.success("Wylogowano");
@@ -113,37 +99,14 @@ const Navbar = () => {
 
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-lg shadow-2xl py-2 z-50">
-                  <Link
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer"
-                    to={`/CreateOffer`}
-                  >
-                    <PlusSquare className="h-4 w-4" /> Stwórz post
-                  </Link>
-                  <div className="h-px bg-zinc-800 my-1 mx-2"></div>
-                  <Link
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer"
-                    to={`/profile/${user.id || user._id}`}
-                  >
-                    <CircleUser className="h-4 w-4" /> Mój profil
-                  </Link>
-                  <div className="h-px bg-zinc-800 my-1 mx-2"></div>
-                  {isAdmin && (
-                    <>
-                      <Link
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-900 cursor-pointer"
-                        to="/admin"
-                      >
-                        <ShieldAlert className="h-4 w-4" /> Panel Admina
-                      </Link>
-                      <div className="h-px bg-zinc-800 my-1 mx-2"></div>
-                    </>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-900 cursor-pointer"
-                  >
-                    <LogOut className="h-4 w-4" /> Wyloguj
-                  </button>
+                  <AccountMenuLinks
+                    user={user}
+                    isAdmin={isAdmin}
+                    onLogout={handleLogout}
+                    itemClass="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900 cursor-pointer"
+                    dangerClass="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-900 cursor-pointer"
+                    dividerClass="h-px bg-zinc-800 my-1 mx-2"
+                  />
                 </div>
               )}
             </div>
@@ -205,40 +168,17 @@ const Navbar = () => {
               
               {mobileDropdownOpen && (
                 <div className="absolute left-0 right-0 top-full mt-2 bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl py-2 z-50">
-                  <Link
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 cursor-pointer"
-                    to={`/CreateOffer`}
-                  >
-                    <PlusSquare className="h-4 w-4" /> Stwórz post
-                  </Link>
-                  <div className="h-px bg-zinc-800 my-1 mx-2"></div>
-                  <Link
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 cursor-pointer"
-                    to={`/profile/${user.id || user._id}`}
-                  >
-                    <CircleUser className="h-4 w-4" /> Mój profil
-                  </Link>
-                  <div className="h-px bg-zinc-800 my-1 mx-2"></div>
-                  {isAdmin && (
-                    <>
-                      <Link
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 cursor-pointer"
-                        to="/admin"
-                      >
-                        <ShieldAlert className="h-4 w-4" /> Panel Admina
-                      </Link>
-                      <div className="h-px bg-zinc-800 my-1 mx-2"></div>
-                    </>
-                  )}
-                  <button
-                    onClick={() => {
+                  <AccountMenuLinks
+                    user={user}
+                    isAdmin={isAdmin}
+                    onLogout={() => {
                       handleLogout();
                       setMobileDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 cursor-pointer"
-                  >
-                    <LogOut className="h-4 w-4" /> Wyloguj
-                  </button>
+                    itemClass="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 cursor-pointer"
+                    dangerClass="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 cursor-pointer"
+                    dividerClass="h-px bg-zinc-800 my-1 mx-2"
+                  />
                 </div>
               )}
             </div>

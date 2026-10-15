@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 import toast from 'react-hot-toast';
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import api from "../api/client";
+import { parseLinks, parseTechTags } from "../utils/parseJsonField";
 
 const AddOfferForm = () => {
   const { user } = useAuth();
@@ -25,20 +24,12 @@ const AddOfferForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      axios.get(`${API_URL}/backend/offer/getOffer/${id}`, { withCredentials: true })
+      api.get(`/offer/getOffer/${id}`)
         .then(res => {
           const data = res.data.message[0];
           if (data) {
-            let techArr = [];
-            try {
-              const parsedTech = typeof data.tech === 'string' ? JSON.parse(data.tech) : data.tech;
-              techArr = Array.isArray(parsedTech) ? parsedTech : JSON.parse(parsedTech);
-            } catch (e) { techArr = []; }
-
-            let linksObj = {};
-            try {
-              linksObj = typeof data.links === 'string' ? JSON.parse(data.links) : data.links;
-            } catch (e) { linksObj = {}; }
+            const techArr = parseTechTags(data.tech);
+            const linksObj = parseLinks(data.links);
             
             setFormData({
               title: data.title || '',
@@ -63,7 +54,7 @@ const AddOfferForm = () => {
 
     setIsDeleting(true);
     try {
-      await axios.delete(`${API_URL}/backend/offers/deleteOffer/${id}`, { withCredentials: true });
+      await api.delete(`/offers/deleteOffer/${id}`);
       toast.success("Ogłoszenie zostało usunięte");
       navigate(`/profile/${user?.id}`);
     } catch (error) {
@@ -93,14 +84,13 @@ const AddOfferForm = () => {
     try {
       if (isEdit) {
         const isAdmin = user && (user.role === "admin");
-        const url = isAdmin ? `${API_URL}/backend/admin/update/offer/${id}` : `${API_URL}/backend/offers/editOffer/${id}`;
-        await axios.patch(url, payload, { withCredentials: true });
+        const url = isAdmin ? `/admin/update/offer/${id}` : `/offers/editOffer/${id}`;
+        await api.patch(url, payload);
         
         toast.success("Ogłoszenie zaktualizowane!");
         navigate(`/offer/${id}`);
       } else {
-        const url = `${API_URL}/backend/addOffer`;
-        await axios.post(url, payload, { withCredentials: true });
+        await api.post("/addOffer", payload);
         
         toast.success("Ogłoszenie opublikowane!");
         navigate(`/profile/${user?.id}`);

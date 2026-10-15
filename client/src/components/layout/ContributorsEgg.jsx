@@ -18,7 +18,19 @@ const sumWeeks = (weeks = []) =>
     { added: 0, deleted: 0, commits: 0 },
   );
 
+const CACHE_KEY = `gh-contrib-${REPO}`;
+
 const fetchStats = async () => {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    /* ignore broken cache */
+  }
+
   for (let i = 0; i < 4; i += 1) {
     const res = await fetch(STATS_URL, {
       headers: { Accept: "application/vnd.github+json" },
@@ -33,7 +45,7 @@ const fetchStats = async () => {
       await new Promise((r) => setTimeout(r, 1200));
       continue;
     }
-    return data
+    const mapped = data
       .map((entry) => {
         const totals = sumWeeks(entry.weeks);
         return {
@@ -44,6 +56,12 @@ const fetchStats = async () => {
         };
       })
       .sort((a, b) => b.added + b.deleted - (a.added + a.deleted));
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(mapped));
+    } catch {
+      /* ignore quota */
+    }
+    return mapped;
   }
   throw new Error("Brak danych");
 };

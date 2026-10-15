@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import api from "../api/client";
 
 const Recover = () => {
   const { token } = useParams();
@@ -18,7 +16,7 @@ const Recover = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/backend/edit/user/forgetPassword`, { email });
+      await api.post("/edit/user/forgetPassword", { email });
       toast.success("Link do resetowania wysłany na email!");
     } catch (error) {
       toast.error(error.response?.data?.message || "Błąd wysyłania");
@@ -34,7 +32,7 @@ const Recover = () => {
     }
     setIsLoading(true);
     try {
-      await axios.patch(`${API_URL}/backend/edit/user/changePassword`, { token, password });
+      await api.patch("/edit/user/changePassword", { token, password });
       toast.success("Hasło zostało zmienione!");
       navigate("/login");
     } catch (error) {

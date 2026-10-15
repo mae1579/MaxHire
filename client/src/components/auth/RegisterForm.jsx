@@ -1,10 +1,9 @@
 import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
-import axios from "axios";
 import { FileText } from "lucide-react";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import api from "../../api/client";
+import { parseCvUpload } from "../../utils/parseCvUpload";
+import { isValidEmail } from "../../utils/validation";
 
 const RegisterForm = ({ onSwitchToLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,28 +12,18 @@ const RegisterForm = ({ onSwitchToLogin }) => {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const pdfInputRef = useRef(null);
-  const { setUser } = useAuth();
 
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isEmailValid = isValidEmail(email);
 
   const handlePdfUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const data = new FormData();
-    data.append("cvFile", file);
     try {
-      const response = await axios.post(
-        `${API_URL}/backend/register/registerAi/cv`,
-        data,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      if (response.data.data) {
-        setName(response.data.data.name || name);
-        setSurname(response.data.data.surname || surname);
-        setEmail(response.data.data.email || email);
+      const parsed = await parseCvUpload(file);
+      if (parsed) {
+        setName(parsed.name || name);
+        setSurname(parsed.surname || surname);
+        setEmail(parsed.email || email);
         toast.success("Dane z CV zostały wczytane");
       }
     } catch (error) {
@@ -52,20 +41,14 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
     setIsLoading(true);
     try {
-      await axios.post(
-        `${API_URL}/backend/register`,
-        {
-          name,
-          surname,
-          email,
-          password,
-          role: "user",
-          phone: "",
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      await api.post("/register", {
+        name,
+        surname,
+        email,
+        password,
+        role: "user",
+        phone: "",
+      });
       toast.success("Utworzono konto!");
       onSwitchToLogin();
     } catch (error) {

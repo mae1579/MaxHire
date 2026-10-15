@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import api from "../api/client";
 import {
   User,
   Mail,
@@ -20,8 +20,9 @@ import toast from "react-hot-toast";
 import formatUpdater from '../utils/DateFormatter';
 import CvBuilder from "../components/cv/CvBuilder";
 import { getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
+import { parseCvUpload } from "../utils/parseCvUpload";
+import { parseTechTags } from "../utils/parseJsonField";
+import { isValidEmail } from "../utils/validation";
 
 const Profile = () => {
   const { id } = useParams();
@@ -40,7 +41,7 @@ const Profile = () => {
   const isOwner = loggedInUser && (loggedInUser.id === id);
   const isAdmin = loggedInUser && (loggedInUser.role === "admin");
 
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email);
+  const isEmailValid = isValidEmail(editForm.email);
   const isPhoneValid = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(editForm.phone);
   const canSave = isEmailValid && isPhoneValid && !isSubmitting;
 
@@ -48,11 +49,9 @@ const Profile = () => {
     try {
       setLoading(true);
       const [profileRes, offersRes, cvRes] = await Promise.all([
-        axios.get(`${API_URL}/backend/profile/getProfile/${id}`, { withCredentials: true }),
-        axios.get(`${API_URL}/backend/offer/user/${id}`, { withCredentials: true }),
-        axios
-          .get(`${API_URL}/backend/profile/cv/${id}`, { withCredentials: true })
-          .catch(() => null),
+        api.get(`/profile/getProfile/${id}`),
+        api.get(`/offer/user/${id}`),
+        api.get(`/profile/cv/${id}`).catch(() => null),
       ]);
 
       if (profileRes.data.message && profileRes.data.message.length > 0) {
@@ -90,15 +89,14 @@ const handleUpdateProfile = async () => {
     setIsSubmitting(true);
     try {
       const res = isAdmin && !isOwner ? 
-        await axios.patch(`${API_URL}/backend/admin/update/user/${id}`, editForm, { withCredentials: true })
-        : await axios.patch(`${API_URL}/backend/edit/user/${id}`, editForm, { withCredentials: true })
+        await api.patch(`/admin/update/user/${id}`, editForm)
+        : await api.patch(`/edit/user/${id}`, editForm)
       
       const updated = { ...profile, email: editForm.email, phone: editForm.phone };
       setProfile(updated); 
       if (isOwner) {
         const userToUpdate = { ...loggedInUser, email: editForm.email, phone: editForm.phone };
         setUser(userToUpdate);
-        localStorage.setItem("user", JSON.stringify(userToUpdate));
       }
       setIsEditing(false);
       toast.success(res.data.message || "Profil zaktualizowany");
@@ -116,19 +114,13 @@ const handleUpdateProfile = async () => {
     data.append("profilePhoto", file);
     const uploadToast = toast.loading("Wgrywanie...");
     try {
-      await axios.post(
-        `${API_URL}/backend/upload/profilePhoto`,
-        data,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      const usersRes = await axios.get(`${API_URL}/backend/profile/getProfile/${id}`, { withCredentials: true });
+      await api.post("/upload/profilePhoto", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const usersRes = await api.get(`/profile/getProfile/${id}`);
       const updatedMe = usersRes.data.message && usersRes.data.message[0];
       if (updatedMe) {
         setUser(updatedMe);
-        localStorage.setItem("user", JSON.stringify(updatedMe));
         setProfile(updatedMe);
         toast.success("Zdjęcie zmienione", { id: uploadToast });
       }
@@ -140,21 +132,12 @@ const handleUpdateProfile = async () => {
   const handlePdfUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const data = new FormData();
-    data.append("cvFile", file);
     try {
-      const response = await axios.post(
-        `${API_URL}/backend/register/registerAi/cv`,
-        data,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      if (response.data.data) {
+      const parsed = await parseCvUpload(file);
+      if (parsed) {
         setEditForm({
-          email: response.data.data.email || editForm.email,
-          phone: response.data.data.phone || editForm.phone,
+          email: parsed.email || editForm.email,
+          phone: parsed.phone || editForm.phone,
         });
         toast.success("Dane z CV zostały wczytane");
       }
@@ -326,13 +309,7 @@ const handleUpdateProfile = async () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {offers.length > 0 ? (
               offers.map((offer) => {
-                let techTags = [];
-                try {
-                  if (offer.tech) {
-                    const first = typeof offer.tech === "string" ? JSON.parse(offer.tech) : offer.tech;
-                    techTags = typeof first === "string" ? JSON.parse(first) : first;
-                  }
-                } catch (e) { techTags = []; }
+                const techTags = parseTechTags(offer.tech);
 
                 return (
                   <div key={offer.id} className="group bg-white/60 backdrop-blur-md border border-zinc-200 p-6 rounded-2xl hover:border-zinc-400 hover:shadow-xl transition-all">

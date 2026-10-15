@@ -2,12 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Camera, Download, FileText, Plus, Upload, User, X } from "lucide-react";
 import toast from "react-hot-toast";
-import axios from "axios";
-import { buildCvPdfBlob, downloadCvPdf } from "../../utils/downloadCvPdf";
+import api from "../../api/client";
 import { pickCvUrl, setSavedCvMeta } from "../../utils/cvStorage";
 import CvPreview, { CV_TEMPLATES } from "./CvPreview";
-
-const API_URL = import.meta.env.VITE_BACKEND_API_URL || "";
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl bg-gray-50 border border-transparent focus:border-black focus:bg-white outline-none transition-all text-sm";
@@ -214,6 +211,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     setDownloading(true);
     const toastId = toast.loading("Generowanie CV...");
     try {
+      const { downloadCvPdf } = await import("../../utils/downloadCvPdf");
       await downloadCvPdf(previewRef.current, cvFilename());
       toast.success("CV pobrane", { id: toastId });
     } catch (error) {
@@ -232,6 +230,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     setSaving(true);
     const toastId = toast.loading("Zapisywanie CV na profil...");
     try {
+      const { buildCvPdfBlob } = await import("../../utils/downloadCvPdf");
       const blob = await buildCvPdfBlob(previewRef.current);
       const filename = cvFilename();
       const payload = { ...form };
@@ -243,9 +242,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
       data.append("cvData", JSON.stringify(payload));
       data.append("userId", profile?.id || "");
 
-      const response = await axios.post(`${API_URL}/backend/profile/cv`, data, {
-        withCredentials: true,
-      });
+      const response = await api.post("/profile/cv", data);
       const cvUrl = pickCvUrl(response.data);
       const meta = { url: cvUrl, savedAt: Date.now() };
       setSavedCvMeta(profile?.id, meta);
