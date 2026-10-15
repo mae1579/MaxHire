@@ -7,7 +7,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
+const storagePhoto = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "ProfilePhoto",
@@ -15,4 +15,4 @@ const storage = new CloudinaryStorage({
   },
 });
 
-module.exports = storage;
+module.exports =  {storagePhoto};

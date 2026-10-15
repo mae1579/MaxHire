@@ -4,7 +4,8 @@ const storage = require("../utils/cloudinaryConfig");
 const tokenAuth = require("../guards/authGuard");
 const { UserRecord } = require("../records/UserRecord");
 const { ValidationError } = require("../utils/handleErrors");
-const upload = multer({ storage: storage });
+const {storagePhoto} = require("../utils/cloudinaryConfig");
+const upload = multer({ storage: storagePhoto });
 
 const photoUploadRouter = express.Router();
 

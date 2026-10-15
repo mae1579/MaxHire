@@ -4,7 +4,6 @@ const createMailOptions = (userEmail, link) => {
         from: process.env.GMAIL_APP_EMAIL,
         to: userEmail,
         subject: "Instrukcja zmiany hasła w systemie MaxHire",
-        // 1. DODANE: Wersja tekstowa (niezbędna dla filtrów antyspamowych Google)
         text: `Otrzymaliśmy prośbę o zresetowanie hasła w systemie MaxHire. Aby ustawić nowe hasło, skopiuj i wklej poniższy link w przeglądarce:\n\n${link}\n\nJeśli to nie Ty wysłałeś zapytanie, zignoruj tę wiadomość.`,
         html: `
     <div style="background-color: #000000; color: #ffffff; padding: 40px; font-family: 'Segoe UI', Arial, sans-serif; text-align: center;">
