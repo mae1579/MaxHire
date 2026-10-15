@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ContributorsEgg from './ContributorsEgg';
 
 const Footer = () => {
@@ -8,7 +9,7 @@ const Footer = () => {
         <p>© {new Date().getFullYear()} MaxHire. Wszystkie prawa zastrzeżone.</p>
         <div className="flex gap-4 text-zinc-500">
           <a href="" className="hover:text-white transition-colors">Prywatność</a>
-          <a href="" className="hover:text-white transition-colors">Regulamin</a>
+          <Link to="/regulamin" className="hover:text-white transition-colors">Regulamin</Link>
         </div>
         <ContributorsEgg />
       </div>

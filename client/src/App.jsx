@@ -14,6 +14,7 @@ import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/routing/ProtectedRoute";
 import ScrollToTop from "./components/routing/ScrollToTop";
 import AdminPanel from "./pages/AdminPanel";
+import Regulamin from "./pages/Regulamin";
 
 const App = () => {
   const { user } = useAuth();
@@ -45,6 +46,10 @@ const App = () => {
           <Route 
             path="/contact" 
             element={<Contact />} 
+          />
+          <Route
+            path="/regulamin"
+            element={<Regulamin />}
           />
           <Route 
             path="/admin" 
