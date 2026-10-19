@@ -4,7 +4,7 @@ import { Camera, Download, FileText, Plus, Upload, User, X } from "lucide-react"
 import toast from "react-hot-toast";
 import api from "../../api/client";
 import { pickCvUrl, setSavedCvMeta } from "../../utils/cvStorage";
-import { assertImageFile } from "../../utils/fileUpload";
+import { assertImageFile, compressImageFile, MAX_UPLOAD_BYTES } from "../../utils/fileUpload";
 import CvPreview, { CV_TEMPLATES } from "./CvPreview";
 
 const inputClass =
@@ -192,9 +192,9 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
       toast.error(invalid);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => updateField("photo", reader.result);
-    reader.readAsDataURL(file);
+    compressImageFile(file)
+      .then((dataUrl) => updateField("photo", dataUrl))
+      .catch(() => toast.error("Nie udało się wczytać zdjęcia"));
   };
 
   const cvFilename = () => {
@@ -234,6 +234,9 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     try {
       const { buildCvPdfBlob } = await import("../../utils/downloadCvPdf");
       const blob = await buildCvPdfBlob(previewRef.current);
+      if (blob.size > MAX_UPLOAD_BYTES) {
+        throw new Error("CV jest za duże do zapisu (max 10 MB)");
+      }
       const filename = cvFilename();
       const payload = { ...form };
       if (typeof payload.photo === "string" && payload.photo.startsWith("data:")) {
@@ -256,7 +259,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     } catch (error) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || "Nie udało się zapisać CV na backendzie",
+        error.response?.data?.message || error.message || "Nie udało się zapisać CV na backendzie",
         { id: toastId },
       );
     } finally {
