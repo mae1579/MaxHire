@@ -27,6 +27,9 @@ const Recover = () => {
 
   const handleSetNewPassword = async (e) => {
     e.preventDefault();
+    if (password.length < 8) {
+      return toast.error("Hasło musi mieć co najmniej 8 znaków");
+    }
     if (password !== confirmPassword) {
       return toast.error("Hasła nie są identyczne");
     }
@@ -80,6 +83,7 @@ const Recover = () => {
                   required
                   disabled={isLoading}
                   type="password"
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -94,6 +98,7 @@ const Recover = () => {
                   required
                   disabled={isLoading}
                   type="password"
+                  minLength={8}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"

@@ -23,6 +23,8 @@ import { getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
 import { parseCvUpload } from "../utils/parseCvUpload";
 import { parseTechTags } from "../utils/parseJsonField";
 import { isValidEmail } from "../utils/validation";
+import { assertImageFile } from "../utils/fileUpload";
+import { isSafeHttpUrl } from "../utils/safeUrl";
 
 const Profile = () => {
   const { id } = useParams();
@@ -38,8 +40,8 @@ const Profile = () => {
   const fileInputRef = useRef(null);
   const pdfInputRef = useRef(null);
 
-  const isOwner = loggedInUser && (loggedInUser.id === id);
-  const isAdmin = loggedInUser && (loggedInUser.role === "admin");
+  const isOwner = loggedInUser && String(loggedInUser.id) === String(id);
+  const isAdmin = loggedInUser && String(loggedInUser.role).toLowerCase() === "admin";
 
   const isEmailValid = isValidEmail(editForm.email);
   const isPhoneValid = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(editForm.phone);
@@ -109,7 +111,13 @@ const handleUpdateProfile = async () => {
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = "";
     if (!file) return;
+    const invalid = assertImageFile(file);
+    if (invalid) {
+      toast.error(invalid);
+      return;
+    }
     const data = new FormData();
     data.append("profilePhoto", file);
     const uploadToast = toast.loading("Wgrywanie...");
@@ -131,6 +139,7 @@ const handleUpdateProfile = async () => {
 
   const handlePdfUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = "";
     if (!file) return;
     try {
       const parsed = await parseCvUpload(file);
@@ -142,7 +151,7 @@ const handleUpdateProfile = async () => {
         toast.success("Dane z CV zostały wczytane");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Błąd przetwarzania CV");
+      toast.error(error.response?.data?.message || error.message || "Błąd przetwarzania CV");
     }
   };
 
@@ -221,15 +230,15 @@ const handleUpdateProfile = async () => {
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {savedCv && !isEditing && (
               <a
-                href={savedCv.url || undefined}
+                href={isSafeHttpUrl(savedCv.url) ? savedCv.url : undefined}
                 onClick={(e) => {
-                  if (savedCv.url) return;
+                  if (isSafeHttpUrl(savedCv.url)) return;
                   e.preventDefault();
                   if (isOwner) setIsCvOpen(true);
                   else toast.error("CV nie ma jeszcze publicznego linku");
                 }}
-                target={savedCv.url ? "_blank" : undefined}
-                rel={savedCv.url ? "noreferrer" : undefined}
+                target={isSafeHttpUrl(savedCv.url) ? "_blank" : undefined}
+                rel={isSafeHttpUrl(savedCv.url) ? "noreferrer" : undefined}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-900 px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-50 transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 <Download className="w-5 h-5 shrink-0" />

@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/routing/ProtectedRoute";
 import ScrollToTop from "./components/routing/ScrollToTop";
 import AdminPanel from "./pages/AdminPanel";
 import Regulamin from "./pages/Regulamin";
+import Prywatnosc from "./pages/Prywatnosc";
 
 const App = () => {
   const { user } = useAuth();
@@ -51,9 +52,17 @@ const App = () => {
             path="/regulamin"
             element={<Regulamin />}
           />
+          <Route
+            path="/prywatnosc"
+            element={<Prywatnosc />}
+          />
           <Route 
             path="/admin" 
-            element={<AdminPanel />} 
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminPanel />
+              </ProtectedRoute>
+            } 
           />
           <Route
             path="/offer/:id"

@@ -4,6 +4,7 @@ import { Camera, Download, FileText, Plus, Upload, User, X } from "lucide-react"
 import toast from "react-hot-toast";
 import api from "../../api/client";
 import { pickCvUrl, setSavedCvMeta } from "../../utils/cvStorage";
+import { assertImageFile } from "../../utils/fileUpload";
 import CvPreview, { CV_TEMPLATES } from "./CvPreview";
 
 const inputClass =
@@ -186,8 +187,9 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Wybierz plik graficzny");
+    const invalid = assertImageFile(file);
+    if (invalid) {
+      toast.error(invalid);
       return;
     }
     const reader = new FileReader();

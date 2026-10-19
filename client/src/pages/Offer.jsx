@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react'
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
 import { parseLinks, parseTechTags } from "../utils/parseJsonField";
+import { isSafeHttpUrl } from "../utils/safeUrl";
 
 const Offer = () => {
   const { id } = useParams();
@@ -14,8 +15,8 @@ const Offer = () => {
   const [loading, setLoading] = useState(true);
   const [showPhone, setShowPhone] = useState(false);
 
-  const isOwner = loggedInUser && (loggedInUser.id === offer?.user_id);
-  const isAdmin = loggedInUser && (loggedInUser.role === "admin");
+  const isOwner = loggedInUser && String(loggedInUser.id) === String(offer?.user_id);
+  const isAdmin = loggedInUser && String(loggedInUser.role).toLowerCase() === "admin";
 
   useEffect(() => {
     setLoading(true);
@@ -130,12 +131,12 @@ const Offer = () => {
                 </Link>
 
                 <div className="flex flex-col gap-2">
-                  {Object.entries(links).map(([name, url]) => (
+                  {Object.entries(links).filter(([, url]) => isSafeHttpUrl(url)).map(([name, url]) => (
                     <a 
                       key={name}
                       href={url} 
                       target="_blank" 
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="flex items-center justify-between text-zinc-600 hover:text-black text-sm font-semibold p-3 rounded-xl hover:bg-white/80 transition-all"
                     >
                       <div className="flex items-center gap-3">
