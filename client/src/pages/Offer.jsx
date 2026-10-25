@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
@@ -77,8 +79,10 @@ const Offer = () => {
               <h2 className="text-sm font-bold uppercase tracking-widest text-black mb-6">
                 Opis stanowiska
               </h2>
-              <div className="text-zinc-800 leading-relaxed text-[17px] whitespace-pre-wrap">
-                {offer.description}
+              <div className="prose prose-zinc max-w-none text-[17px] prose-a:text-blue-700 prose-img:rounded-xl">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {offer.description || ""}
+                </ReactMarkdown>
               </div>
             </section>
 
