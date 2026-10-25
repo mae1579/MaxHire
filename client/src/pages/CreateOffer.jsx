@@ -55,9 +55,13 @@ const AddOfferForm = () => {
 
     setIsDeleting(true);
     try {
-      await api.delete(`/offers/deleteOffer/${id}`);
+      const isAdmin = String(user?.role || "").toLowerCase() === "admin";
+      const url = isAdmin
+        ? `/admin/remove/offer/${id}`
+        : `/offers/deleteOffer/${id}`;
+      await api.delete(url);
       toast.success("Ogłoszenie zostało usunięte");
-      navigate(`/profile/${user?.id}`);
+      navigate(isAdmin ? "/admin" : `/profile/${user?.id}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Błąd podczas usuwania");
     } finally {
