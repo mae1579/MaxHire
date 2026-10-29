@@ -27,7 +27,7 @@ async function renderCanvas(element) {
   );
 
   return html2canvas(element, {
-    scale: 2,
+    scale: 1.5,
     useCORS: true,
     allowTaint: false,
     backgroundColor: "#ffffff",
@@ -55,27 +55,29 @@ async function createPdf(element) {
     }
   }
 
-  const img = canvas.toDataURL("image/png");
-  const pdf = new jsPDF({ unit: "mm", format: "a4" });
+  const img = canvas.toDataURL("image/jpeg", 0.75);
+  const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true });
   const pageWidth = 210;
   const pageHeight = 297;
   const imgHeight = (canvas.height * pageWidth) / canvas.width;
+  const addPageImage = (x, y, w, h) =>
+    pdf.addImage(img, "JPEG", x, y, w, h, undefined, "MEDIUM");
 
   if (imgHeight <= pageHeight + 2) {
-    pdf.addImage(img, "PNG", 0, 0, pageWidth, Math.min(imgHeight, pageHeight));
+    addPageImage(0, 0, pageWidth, Math.min(imgHeight, pageHeight));
     return pdf;
   }
 
   let heightLeft = imgHeight;
   let position = 0;
 
-  pdf.addImage(img, "PNG", 0, position, pageWidth, imgHeight);
+  addPageImage(0, position, pageWidth, imgHeight);
   heightLeft -= pageHeight;
 
   while (heightLeft > 2) {
     position = heightLeft - imgHeight;
     pdf.addPage();
-    pdf.addImage(img, "PNG", 0, position, pageWidth, imgHeight);
+    addPageImage(0, position, pageWidth, imgHeight);
     heightLeft -= pageHeight;
   }
 

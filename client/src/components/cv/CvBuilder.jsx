@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Camera, Download, FileText, Plus, Upload, User, X } from "lucide-react";
+import { Camera, Download, FileText, Lock, Plus, Upload, User, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 import api from "../../api/client";
 import { pickCvUrl, setSavedCvMeta } from "../../utils/cvStorage";
+import { assertImageFile, compressImageFile, MAX_UPLOAD_BYTES } from "../../utils/fileUpload";
 import CvPreview, { CV_TEMPLATES } from "./CvPreview";
 
 const inputClass =
@@ -106,6 +108,8 @@ const ScaledPreview = ({ form }) => {
 };
 
 const CvBuilder = ({ profile, onClose, onSaved }) => {
+  const { user } = useAuth();
+  const isAdmin = String(user?.role || "").toLowerCase() === "admin";
   const previewRef = useRef(null);
   const photoInputRef = useRef(null);
   const storageKey = `cv-draft-${profile?.id || "guest"}`;
@@ -159,6 +163,13 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const current = CV_TEMPLATES.find((tpl) => tpl.id === form.template);
+    if (current?.premium && !isAdmin) {
+      setForm((prev) => ({ ...prev, template: "classic" }));
+    }
+  }, [form.template, isAdmin]);
+
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -186,13 +197,14 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Wybierz plik graficzny");
+    const invalid = assertImageFile(file);
+    if (invalid) {
+      toast.error(invalid);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => updateField("photo", reader.result);
-    reader.readAsDataURL(file);
+    compressImageFile(file)
+      .then((dataUrl) => updateField("photo", dataUrl))
+      .catch(() => toast.error("Nie udało się wczytać zdjęcia"));
   };
 
   const cvFilename = () => {
@@ -232,6 +244,9 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     try {
       const { buildCvPdfBlob } = await import("../../utils/downloadCvPdf");
       const blob = await buildCvPdfBlob(previewRef.current);
+      if (blob.size > MAX_UPLOAD_BYTES) {
+        throw new Error("CV jest za duże do zapisu (max 10 MB)");
+      }
       const filename = cvFilename();
       const payload = { ...form };
       if (typeof payload.photo === "string" && payload.photo.startsWith("data:")) {
@@ -254,7 +269,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
     } catch (error) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || "Nie udało się zapisać CV na backendzie",
+        error.response?.data?.message || error.message || "Nie udało się zapisać CV na backendzie",
         { id: toastId },
       );
     } finally {
@@ -327,25 +342,42 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
                 <div className="grid grid-cols-2 gap-2">
                   {CV_TEMPLATES.map((tpl) => {
                     const active = (form.template || "classic") === tpl.id;
+                    const locked = tpl.premium && !isAdmin;
                     return (
                       <button
                         key={tpl.id}
                         type="button"
-                        onClick={() => updateField("template", tpl.id)}
-                        className={`text-left rounded-2xl border p-3 cursor-pointer transition-all ${
-                          active
-                            ? "border-zinc-950 bg-white shadow-sm"
-                            : "border-zinc-200 bg-gray-50 hover:bg-white"
+                        onClick={() => {
+                          if (locked) {
+                            toast("Szablon tylko na planie Premium", { icon: "🔒" });
+                            return;
+                          }
+                          updateField("template", tpl.id);
+                        }}
+                        className={`relative text-left rounded-2xl border p-3 transition-all ${
+                          locked
+                            ? "border-amber-200 bg-amber-50/70 cursor-not-allowed opacity-80"
+                            : active
+                            ? "border-zinc-950 bg-white shadow-sm cursor-pointer"
+                            : "border-zinc-200 bg-gray-50 hover:bg-white cursor-pointer"
                         }`}
                       >
-                        <span
-                          className={`block h-2 w-10 rounded-full mb-2 ${tpl.swatch}`}
-                        />
-                        <span className="block text-xs font-black uppercase tracking-tighter">
+                        <span className="flex items-center justify-between gap-2 mb-2">
+                          <span
+                            className={`block h-2 w-10 rounded-full ${tpl.swatch} ${locked ? "opacity-50" : ""}`}
+                          />
+                          {tpl.premium && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-amber-600">
+                              {locked && <Lock className="w-3 h-3" />}
+                              Premium
+                            </span>
+                          )}
+                        </span>
+                        <span className={`block text-xs font-black uppercase tracking-tighter ${locked ? "text-zinc-500" : ""}`}>
                           {tpl.label}
                         </span>
                         <span className="block text-[10px] text-zinc-400 mt-0.5">
-                          {tpl.hint}
+                          {locked ? "Tylko dla Premium" : tpl.hint}
                         </span>
                       </button>
                     );

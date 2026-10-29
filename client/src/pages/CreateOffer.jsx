@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import toast from 'react-hot-toast';
 import api from "../api/client";
 import { parseLinks, parseTechTags } from "../utils/parseJsonField";
+import { isSafeHttpUrl } from "../utils/safeUrl";
 
 const AddOfferForm = () => {
   const { user } = useAuth();
@@ -54,9 +55,13 @@ const AddOfferForm = () => {
 
     setIsDeleting(true);
     try {
-      await api.delete(`/offers/deleteOffer/${id}`);
+      const isAdmin = String(user?.role || "").toLowerCase() === "admin";
+      const url = isAdmin
+        ? `/admin/remove/offer/${id}`
+        : `/offers/deleteOffer/${id}`;
+      await api.delete(url);
       toast.success("Ogłoszenie zostało usunięte");
-      navigate(`/profile/${user?.id}`);
+      navigate(isAdmin ? "/admin" : `/profile/${user?.id}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Błąd podczas usuwania");
     } finally {
@@ -68,9 +73,22 @@ const AddOfferForm = () => {
     e.preventDefault();
     setLoading(true);
 
+    const github = formData.github.trim();
+    const linkedin = formData.linkedin.trim();
+    if (github && !isSafeHttpUrl(github)) {
+      toast.error("Link GitHub musi zaczynać się od http:// lub https://");
+      setLoading(false);
+      return;
+    }
+    if (linkedin && !isSafeHttpUrl(linkedin)) {
+      toast.error("Link LinkedIn musi zaczynać się od http:// lub https://");
+      setLoading(false);
+      return;
+    }
+
     const linksObj = {};
-    if (formData.github.trim()) linksObj.Github = formData.github.trim();
-    if (formData.linkedin.trim()) linksObj.Linkedin = formData.linkedin.trim();
+    if (github) linksObj.Github = github;
+    if (linkedin) linksObj.Linkedin = linkedin;
 
     const payload = {
       id: id,
@@ -83,7 +101,7 @@ const AddOfferForm = () => {
 
     try {
       if (isEdit) {
-        const isAdmin = user && (user.role === "admin");
+        const isAdmin = user && String(user.role).toLowerCase() === "admin";
         const url = isAdmin ? `/admin/update/offer/${id}` : `/offers/editOffer/${id}`;
         await api.patch(url, payload);
         

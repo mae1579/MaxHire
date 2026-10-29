@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import formatUpdater from '../../utils/DateFormatter';
 import { parseTechTags } from '../../utils/parseJsonField';
+import stripMarkdown from '../../utils/stripMarkdown';
 
 const Listing = ({ id, title, company, description, tech, updated, photo: image, onTagClick }) => {
   const techTags = parseTechTags(tech);
@@ -38,7 +39,7 @@ const Listing = ({ id, title, company, description, tech, updated, photo: image,
         </div>
         
         <p className="text-[#d4d4d8] text-sm mb-4 line-clamp-1 font-normal leading-relaxed">
-          {description}
+          {stripMarkdown(description || "")}
         </p>
 
         <div className="flex flex-wrap gap-2">

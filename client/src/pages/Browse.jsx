@@ -30,7 +30,7 @@ const Browse = () => {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    api.get(`/offers?page=${page}&search=${searchTerm}`)
+    api.get(`/offers?page=${page}&search=${encodeURIComponent(searchTerm)}`)
       .then(res => {
         if (res.data && Array.isArray(res.data.offers)) {
           setOffers(res.data.offers);

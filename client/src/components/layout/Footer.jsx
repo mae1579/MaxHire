@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="flex flex-col items-center gap-2">
         <p>© {new Date().getFullYear()} MaxHire. Wszystkie prawa zastrzeżone.</p>
         <div className="flex gap-4 text-zinc-500">
-          <a href="" className="hover:text-white transition-colors">Prywatność</a>
+          <Link to="/prywatnosc" className="hover:text-white transition-colors">Prywatność</Link>
           <Link to="/regulamin" className="hover:text-white transition-colors">Regulamin</Link>
         </div>
         <ContributorsEgg />

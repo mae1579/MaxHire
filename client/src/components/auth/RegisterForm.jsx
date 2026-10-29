@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import api from "../../api/client";
 import { parseCvUpload } from "../../utils/parseCvUpload";
@@ -11,12 +12,14 @@ const RegisterForm = ({ onSwitchToLogin }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const pdfInputRef = useRef(null);
 
   const isEmailValid = isValidEmail(email);
 
   const handlePdfUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = "";
     if (!file) return;
     try {
       const parsed = await parseCvUpload(file);
@@ -27,7 +30,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         toast.success("Dane z CV zostały wczytane");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Błąd przetwarzania CV");
+      toast.error(error.response?.data?.message || error.message || "Błąd przetwarzania CV");
     }
   };
 
@@ -36,6 +39,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
     if (!isEmailValid) {
       toast.error("Nieprawidłowy adres email");
+      return;
+    }
+
+    if (!acceptedTerms) {
+      toast.error("Zaakceptuj regulamin");
       return;
     }
 
@@ -152,8 +160,29 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           minLength={8}
           placeholder="Stwórz silne hasło"
           required
-          className="w-full p-3 mb-8 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all disabled:opacity-50"
+          className="w-full p-3 mb-4 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all disabled:opacity-50"
         />
+
+        <label className="flex items-start gap-3 mb-8 text-sm text-zinc-400 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            disabled={isLoading}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 accent-zinc-100 cursor-pointer"
+            required
+          />
+          <span>
+            Akceptuję{" "}
+            <Link
+              to="/regulamin"
+              className="text-white font-semibold underline underline-offset-4 hover:text-zinc-200"
+            >
+              regulamin
+            </Link>{" "}
+            serwisu MaxHire.
+          </span>
+        </label>
 
         <button
           disabled={isLoading}
