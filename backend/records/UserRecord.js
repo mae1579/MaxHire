@@ -13,6 +13,7 @@ class UserRecord {
       surname,
       phone,
       photo,
+      cv,
     } = obj;
 
     this.id = id ?? uuid();
@@ -23,6 +24,7 @@ class UserRecord {
     this.surname = surname;
     this.phone = phone ? phone : null;
     this.photo = photo ? photo : null;
+    this.cv = cv ? cv : null;
 
     // Wykonac walidację pól !
 
@@ -69,6 +71,16 @@ class UserRecord {
       photo: photo,
       id: userid,
     });
+  }
+
+  static async updateUserCv(userid, cvUrl) {
+    await pool.execute(
+      "UPDATE `users` SET `cv_url` = :cvUrl WHERE `id` = :id",
+      {
+        cvUrl: cvUrl,
+        id: userid,
+      },
+    );
   }
 
   async delete() {

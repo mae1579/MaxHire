@@ -16,6 +16,7 @@ const { photoUploadRouter } = require("./routers/photoUploadRouter");
 const { offerRouter } = require("./routers/offerRouter");
 const { editUserRouter } = require("./routers/editUserRouter");
 const { profileRouter } = require("./routers/profileRouter");
+const { cvUploadRouter } = require("./routers/cvUploadRouter");
 
 const app = express();
 app.use(
@@ -41,7 +42,8 @@ app.use("/addOffer", addOfferRouter);
 app.use("/offers", offersRouter);
 app.use("/offer", offerRouter);
 app.use("/profile", profileRouter);
-app.use("/upload", photoUploadRouter);
+app.use("/upload", photoUploadRouter, cvUploadRouter);
+
 app.use(handleError);
 
 app.listen(3000, "0.0.0.0", () => {

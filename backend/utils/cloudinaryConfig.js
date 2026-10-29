@@ -15,4 +15,13 @@ const storagePhoto = new CloudinaryStorage({
   },
 });
 
-module.exports =  {storagePhoto};
+const cvStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "UserCVs",
+    format: async (req, file) => "pdf",
+    allowed_formats: ["pdf"],
+  },
+});
+
+module.exports = { storagePhoto, cvStorage };
