@@ -54,6 +54,12 @@ class OfferRecord {
     );
   }
 
+  static async findAllGeminiData(){
+      const [data] = await pool.execute("SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`");
+      return data.length > 0 ? data.map((elem) => (elem)) : null;
+  }
+
+
   static async findAllFiltr(limit, offset, search) {
     let sql =
       "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";

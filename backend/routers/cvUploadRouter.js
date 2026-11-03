@@ -48,10 +48,10 @@ cvUploadRouter.post("/uploadcv", tokenAuth, async (req, res) => {
       );
     }
 
-    let cvUrl = req.file.path;
-    cvUrl = cvUrl.replace("/upload/", "/upload/fl_attachment/");
+    let cvUrl= req.file.path;
+    const cvUrlDowload  = cvUrl.replace("/upload/", "/upload/fl_attachment/");
     await UserRecord.updateUserCv(findUser.id, cvUrl.toString());
-    res.status(200).json({ message: "Plik CV zostal zapisany", cvUrl });
+    res.status(200).json({ message: "Plik CV zostal zapisany", cvUrl, cvUrlDowload });
   } catch (err) {
     if (err instanceof ValidationError) {
       throw err;

@@ -13,7 +13,7 @@ class UserRecord {
       surname,
       phone,
       photo,
-      cv,
+      cv_url,
     } = obj;
 
     this.id = id ?? uuid();
@@ -24,7 +24,7 @@ class UserRecord {
     this.surname = surname;
     this.phone = phone ? phone : null;
     this.photo = photo ? photo : null;
-    this.cv = cv ? cv : null;
+    this.cv_url = cv_url ? cv_url : null;
 
     // Wykonac walidację pól !
 
