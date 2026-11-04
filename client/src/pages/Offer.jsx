@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import NotFound from "./NotFound";
 import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
@@ -36,7 +37,14 @@ const Offer = () => {
   }, [id]);
 
   if (loading) return <div className="max-w-4xl mx-auto px-6 py-20 text-black font-bold uppercase tracking-widest">Wczytywanie...</div>;
-  if (error || !offer) return <div className="max-w-4xl mx-auto px-6 py-20 text-red-600 font-bold uppercase tracking-widest">{error}</div>;
+  if (error || !offer) {
+    return (
+      <NotFound
+        title="Nie ma takiego ogłoszenia"
+        description={error || "Oferta nie istnieje albo została usunięta."}
+      />
+    );
+  }
 
   const techTags = parseTechTags(offer.tech);
   const links = parseLinks(offer.links);

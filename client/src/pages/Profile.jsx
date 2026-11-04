@@ -26,6 +26,7 @@ import stripMarkdown from "../utils/stripMarkdown";
 import { isValidEmail } from "../utils/validation";
 import { assertImageFile } from "../utils/fileUpload";
 import { isSafeHttpUrl } from "../utils/safeUrl";
+import NotFound from "./NotFound";
 
 const Profile = () => {
   const { id } = useParams();
@@ -163,9 +164,10 @@ const handleUpdateProfile = async () => {
 
   if (!profile)
     return (
-      <div className="text-zinc-950 flex items-center justify-center font-bold py-20">
-        Użytkownik nie istnieje.
-      </div>
+      <NotFound
+        title="Nie ma takiego użytkownika"
+        description="Profil nie istnieje albo został usunięty."
+      />
     );
 
   return (

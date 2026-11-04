@@ -10,6 +10,7 @@ const Browse = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [reloadToken, setReloadToken] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const page = parseInt(searchParams.get('page')) || 1;
@@ -42,7 +43,7 @@ const Browse = () => {
       })
       .catch(() => setError('Nie udało się załadować ofert'))
       .finally(() => setLoading(false));
-  }, [page, searchTerm]);
+  }, [page, searchTerm, reloadToken]);
 
   useEffect(() => {
     setLocalSearch(searchTerm);
@@ -114,7 +115,13 @@ const Browse = () => {
       <Listings 
         offers={offers} 
         loading={loading} 
-        error={error} 
+        error={error}
+        searchTerm={searchTerm}
+        onReset={() => {
+          setLocalSearch("");
+          setSearchParams({});
+        }}
+        onRetry={() => setReloadToken((token) => token + 1)}
         onTagClick={(tag) => updateParams({ search: tag, page: 1 })}
       />
 

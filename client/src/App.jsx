@@ -16,6 +16,7 @@ import ScrollToTop from "./components/routing/ScrollToTop";
 import AdminPanel from "./pages/AdminPanel";
 import Regulamin from "./pages/Regulamin";
 import Prywatnosc from "./pages/Prywatnosc";
+import NotFound from "./pages/NotFound";
 
 const App = () => {
   const { user } = useAuth();
@@ -111,6 +112,10 @@ const App = () => {
                 <CreateOffer />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="*"
+            element={<NotFound />}
           />
         </Routes>
       </main>
