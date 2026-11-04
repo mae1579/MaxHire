@@ -26,6 +26,7 @@ import stripMarkdown from "../utils/stripMarkdown";
 import { isValidEmail } from "../utils/validation";
 import { assertImageFile } from "../utils/fileUpload";
 import { isSafeHttpUrl } from "../utils/safeUrl";
+import NotFound from "./NotFound";
 
 const Profile = () => {
   const { id } = useParams();
@@ -51,10 +52,9 @@ const Profile = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [profileRes, offersRes, cvRes] = await Promise.all([
+      const [profileRes, offersRes] = await Promise.all([
         api.get(`/profile/getProfile/${id}`),
         api.get(`/offer/user/${id}`),
-        api.get(`/profile/cv/${id}`).catch(() => null),
       ]);
 
       if (profileRes.data.message && profileRes.data.message.length > 0) {
@@ -62,9 +62,8 @@ const Profile = () => {
         setProfile(userData);
         setEditForm({ email: userData.email, phone: userData.phone || "" });
         const fromProfile = pickCvUrl(userData);
-        const fromCvRoute = pickCvUrl(cvRes?.data);
         const fromLocal = getSavedCvMeta(id);
-        const url = fromProfile || fromCvRoute || fromLocal?.url || "";
+        const url = fromProfile || fromLocal?.url || "";
         if (url || fromLocal) {
           const meta = { url, savedAt: fromLocal?.savedAt || Date.now() };
           setSavedCv(meta);
@@ -165,9 +164,10 @@ const handleUpdateProfile = async () => {
 
   if (!profile)
     return (
-      <div className="text-zinc-950 flex items-center justify-center font-bold py-20">
-        Użytkownik nie istnieje.
-      </div>
+      <NotFound
+        title="Nie ma takiego użytkownika"
+        description="Profil nie istnieje albo został usunięty."
+      />
     );
 
   return (

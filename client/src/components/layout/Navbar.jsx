@@ -51,6 +51,17 @@ const Navbar = () => {
   };
 
   const isAdmin = String(user?.role || "").toLowerCase() === "admin";
+  const path = location.pathname;
+  const navLinks = [
+    { to: "/", label: "Strona główna" },
+    { to: "/browse", label: "Przeglądaj" },
+    { to: "/contact", label: "Kontakt" },
+  ];
+  const isActive = (to) => (to === "/" ? path === "/" : path === to || path.startsWith(`${to}/`));
+  const navClass = (to, extra = "") =>
+    `${extra} transition-colors whitespace-nowrap ${
+      isActive(to) ? "text-white font-semibold" : "text-zinc-400 hover:text-white"
+    }`;
 
   return (
     <nav className="grid grid-cols-[auto_1fr_auto] items-center px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-zinc-800 bg-zinc-950 relative text-zinc-100 z-50">
@@ -60,16 +71,17 @@ const Navbar = () => {
         </Link>
       </div>
 
-      <div className="hidden sm:flex items-center justify-center flex-1 gap-4 md:gap-8 text-zinc-400 px-4">
-        <Link to="/" className="hover:text-white transition-colors whitespace-nowrap">
-          Strona główna
-        </Link>
-        <Link to="/browse" className="hover:text-white transition-colors whitespace-nowrap">
-          Przeglądaj
-        </Link>
-        <Link to="/contact" className="hover:text-white transition-colors whitespace-nowrap">
-          Kontakt
-        </Link>
+      <div className="hidden sm:flex items-center justify-center flex-1 gap-4 md:gap-8 px-4">
+        {navLinks.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={navClass(item.to)}
+            aria-current={isActive(item.to) ? "page" : undefined}
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
 
       <div className="flex items-center justify-end">
@@ -132,15 +144,16 @@ const Navbar = () => {
           mobileNavbarOpen ? "block" : "hidden"
         }`}
       >
-        <Link to="/" className="text-zinc-300 hover:text-white py-2">
-          Strona główna
-        </Link>
-        <Link to="/browse" className="text-zinc-300 hover:text-white py-2">
-          Przeglądaj
-        </Link>
-        <Link to="/contact" className="text-zinc-300 hover:text-white py-2">
-          Kontakt
-        </Link>
+        {navLinks.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={navClass(item.to, "py-2")}
+            aria-current={isActive(item.to) ? "page" : undefined}
+          >
+            {item.label}
+          </Link>
+        ))}
 
         <div className="w-full h-px bg-zinc-800 my-2"></div>
 

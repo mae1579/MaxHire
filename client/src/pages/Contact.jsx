@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from "../context/AuthContext";
 import toast from 'react-hot-toast';
+import { isValidEmail } from "../utils/validation";
+
+const SUPPORT_EMAIL = "support@maxhire.example";
 
 const Contact = () => {
   const { user } = useAuth();
@@ -8,8 +11,21 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success("Wiadomość wysłana!");
-    setFormData({ email: user?.email ?? '', message: '' });
+    const email = formData.email.trim();
+    const message = formData.message.trim();
+
+    if (!isValidEmail(email)) {
+      toast.error("Podaj poprawny adres e-mail.");
+      return;
+    }
+    if (!message) {
+      toast.error("Wpisz wiadomość.");
+      return;
+    }
+
+    const subject = encodeURIComponent("MaxHire — kontakt");
+    const body = encodeURIComponent(`Od: ${email}\n\n${message}`);
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -20,7 +36,7 @@ const Contact = () => {
             Skontaktuj się z nami
           </h2>
           <p className="text-zinc-400 mt-2 text-sm">
-            Napisz do nas, odpowiemy najszybciej jak to możliwe.
+            Formularz otworzy Twój program pocztowy na {SUPPORT_EMAIL}.
           </p>
         </div>
 
@@ -61,14 +77,19 @@ const Contact = () => {
             type="submit"
             className="w-full py-3.5 font-bold text-zinc-950 bg-zinc-100 rounded-lg hover:bg-white hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-100 focus:ring-offset-zinc-900 transition-all shadow-lg cursor-pointer"
           >
-            Wyślij wiadomość
+            Otwórz maila
           </button>
         </form>
 
         <div className="mt-6 pt-4 border-t border-zinc-800/50 flex justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
           <div className="flex flex-col">
             <span className="text-zinc-500">Email</span>
-            <span className="normal-case tracking-normal text-zinc-400 text-xs font-medium">support@maxhire.example</span>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="normal-case tracking-normal text-zinc-400 text-xs font-medium hover:text-white transition-colors"
+            >
+              {SUPPORT_EMAIL}
+            </a>
           </div>
           <div className="flex flex-col text-right">
             <span className="text-zinc-500">Lokalizacja</span>

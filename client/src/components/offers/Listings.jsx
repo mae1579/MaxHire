@@ -64,10 +64,72 @@ const Listing = ({ id, title, company, description, tech, updated, photo: image,
   );
 };
 
-const Listings = ({ offers, loading, error, onTagClick }) => {
-  if (loading) return <div className="text-zinc-500 text-center py-10 animate-pulse font-medium uppercase tracking-widest text-xs">Wczytywanie ofert...</div>;
-  if (error) return <div className="text-red-400 text-center py-10 font-medium text-sm">{error}</div>;
-  if (!offers || offers.length === 0) return <div className="text-zinc-500 text-center py-10 font-medium text-sm">Brak ofert do wyświetlenia</div>;
+const StatusCard = ({ title, description, actionLabel, onAction }) => (
+  <div className="bg-[#070709] border border-[#1f1f22] rounded-2xl px-6 py-12 text-center">
+    <p className="text-white font-bold text-lg">{title}</p>
+    {description && (
+      <p className="text-zinc-500 text-sm mt-2 max-w-md mx-auto">{description}</p>
+    )}
+    {onAction && actionLabel && (
+      <button
+        type="button"
+        onClick={onAction}
+        className="mt-6 px-5 py-2.5 rounded-xl bg-white text-zinc-950 text-sm font-semibold hover:bg-zinc-200 transition-colors cursor-pointer"
+      >
+        {actionLabel}
+      </button>
+    )}
+  </div>
+);
+
+const Listings = ({
+  offers,
+  loading,
+  error,
+  onTagClick,
+  searchTerm = "",
+  onReset,
+  onRetry,
+  emptyTitle,
+  emptyDescription,
+}) => {
+  if (loading) {
+    return (
+      <div className="text-zinc-500 text-center py-10 animate-pulse font-medium uppercase tracking-widest text-xs">
+        Wczytywanie ofert...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <StatusCard
+        title="Nie udało się załadować"
+        description={error}
+        actionLabel={onRetry ? "Spróbuj ponownie" : undefined}
+        onAction={onRetry}
+      />
+    );
+  }
+
+  if (!offers || offers.length === 0) {
+    const query = (searchTerm || "").trim();
+    const title = emptyTitle || (query ? "Nic nie pasuje" : "Brak ogłoszeń");
+    const description =
+      emptyDescription ||
+      (query
+        ? `Żadne ogłoszenie nie zawiera „${query}”. Zmień frazę albo wyczyść wyszukiwanie.`
+        : "Na tej stronie nie ma zleceń. Sprawdź później albo dodaj własne.");
+
+    return (
+      <StatusCard
+        title={title}
+        description={description}
+        actionLabel={query && onReset ? "Wyczyść wyszukiwanie" : undefined}
+        onAction={query && onReset ? onReset : undefined}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col">
