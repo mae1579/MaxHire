@@ -52,7 +52,7 @@ class UserRecord {
 
   async update() {
     await pool.execute(
-      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo WHERE `id`=:id",
+      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo,  WHERE `id`=:id",
       {
         id: this.id,
         email: this.email,
@@ -114,7 +114,7 @@ class UserRecord {
 
   static async getOneUser(user_id) {
     const [data] = await pool.execute(
-      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `users`.`role` FROM `users` WHERE `users`.`id` = :id",
+      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `users`.`role`, `users`.`cv_url` FROM `users` WHERE `users`.`id` = :id",
 
       {
         id: user_id,
