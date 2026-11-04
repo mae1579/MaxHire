@@ -22,9 +22,10 @@ export const pickCvUrl = (source) => {
   const nested = source.message && !Array.isArray(source.message) ? source.message : source;
   return (
     nested.cvUrl ||
+    nested.cvUrlDowload ||
+    nested.cv_url ||
     nested.cv ||
     nested.cvFile ||
-    nested.cv_url ||
     nested.url ||
     ""
   );

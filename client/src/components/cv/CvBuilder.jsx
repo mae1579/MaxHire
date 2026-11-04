@@ -248,17 +248,14 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
         throw new Error("CV jest za duże do zapisu (max 10 MB)");
       }
       const filename = cvFilename();
-      const payload = { ...form };
-      if (typeof payload.photo === "string" && payload.photo.startsWith("data:")) {
-        payload.photo = profile?.photo || "";
-      }
       const data = new FormData();
       data.append("cvFile", blob, filename);
-      data.append("cvData", JSON.stringify(payload));
-      data.append("userId", profile?.id || "");
 
-      const response = await api.post("/profile/cv", data);
-      const cvUrl = pickCvUrl(response.data);
+      const response = await api.post("/upload/uploadcv", data);
+      const cvUrl =
+        pickCvUrl(response.data) ||
+        response.data?.cvUrlDowload ||
+        "";
       const meta = { url: cvUrl, savedAt: Date.now() };
       setSavedCvMeta(profile?.id, meta);
       onSaved?.(meta);
