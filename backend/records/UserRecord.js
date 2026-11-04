@@ -52,7 +52,7 @@ class UserRecord {
 
   async update() {
     await pool.execute(
-      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo,  WHERE `id`=:id",
+      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo, `cv_url`=:cv_url  WHERE `id`=:id",
       {
         id: this.id,
         email: this.email,
@@ -62,6 +62,7 @@ class UserRecord {
         surname: this.surname,
         phone: this.phone,
         photo: this.photo,
+        cv_url: this.cv_url,
       },
     );
   }
