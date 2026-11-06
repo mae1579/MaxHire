@@ -3,10 +3,32 @@ import { Link } from 'react-router-dom';
 import formatUpdater from '../../utils/DateFormatter';
 import { parseTechTags } from '../../utils/parseJsonField';
 
-const Listing = ({ id, title, company, description, tech, updated, photo: image, onTagClick }) => {
+const Listing = ({
+  id,
+  title,
+  company,
+  description,
+  tech,
+  updated,
+  photo: image,
+  match_percentage: matchPercentage,
+  match_reason: matchReason,
+  onTagClick,
+}) => {
   const techTags = parseTechTags(tech);
 
   const finalImgSrc = (image && image.trim() !== "") ? image : "/favicon.svg";
+  const numericMatchPercentage = Number(matchPercentage);
+  const hasMatchPercentage =
+    matchPercentage !== undefined &&
+    matchPercentage !== null &&
+    Number.isFinite(numericMatchPercentage);
+  const matchColor =
+    numericMatchPercentage >= 80
+      ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+      : numericMatchPercentage >= 60
+        ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+        : "bg-rose-500/15 text-rose-300 border-rose-500/30";
 
   return (
     <div className="bg-[#070709] p-5 rounded-2xl flex flex-row gap-5 border border-[#1f1f22] mb-4 transition-all duration-200 hover:bg-[#18181b] hover:border-[#3f3f46]">
@@ -25,21 +47,37 @@ const Listing = ({ id, title, company, description, tech, updated, photo: image,
       </div>
 
       <div className="grow flex flex-col min-w-0">
-        <div className="flex flex-col mb-1">
-          <h3 className="w-fit">
-            <Link 
-              to={`/offer/${id}`} 
-              className="text-[#ffffff] text-lg font-bold hover:text-blue-400 transition-colors truncate block"
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <div className="flex min-w-0 flex-col">
+            <h3 className="w-fit max-w-full">
+              <Link
+                to={`/offer/${id}`}
+                className="text-[#ffffff] text-lg font-bold hover:text-blue-400 transition-colors truncate block"
+              >
+                {title}
+              </Link>
+            </h3>
+            <span className="text-[#a1a1aa] text-sm font-medium">{company}</span>
+          </div>
+          {hasMatchPercentage && (
+            <span
+              aria-label={`Dopasowanie ${Math.round(numericMatchPercentage)} procent`}
+              className={`shrink-0 rounded-lg border px-2.5 py-1 text-xs font-bold ${matchColor}`}
             >
-              {title}
-            </Link>
-          </h3>
-          <span className="text-[#a1a1aa] text-sm font-medium">{company}</span>
+              {Math.round(numericMatchPercentage)}% dopasowania
+            </span>
+          )}
         </div>
         
         <p className="text-[#d4d4d8] text-sm mb-4 line-clamp-1 font-normal leading-relaxed">
           {description}
         </p>
+
+        {matchReason && (
+          <p className="mb-4 text-xs leading-relaxed text-violet-300">
+            {matchReason}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2">
           {Array.isArray(techTags) && techTags.map((tag, tagIndex) => (
