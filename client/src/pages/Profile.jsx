@@ -22,7 +22,6 @@ import CvBuilder from "../components/cv/CvBuilder";
 import { getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
 import { parseCvUpload } from "../utils/parseCvUpload";
 import { parseTechTags } from "../utils/parseJsonField";
-import stripMarkdown from "../utils/stripMarkdown";
 import { isValidEmail } from "../utils/validation";
 import { assertImageFile } from "../utils/fileUpload";
 import { isSafeHttpUrl } from "../utils/safeUrl";
@@ -334,7 +333,7 @@ const handleUpdateProfile = async () => {
                         <ExternalLink className="w-5 h-5 text-zinc-300 group-hover:text-zinc-950 transition-colors" />
                       </Link>
                     </div>
-                    <p className="text-zinc-700 text-sm leading-relaxed mb-6 line-clamp-3 font-semibold">{stripMarkdown(offer.description || "")}</p>
+                    <p className="text-zinc-700 text-sm leading-relaxed mb-6 line-clamp-3 font-semibold">{offer.description}</p>
                     <div className="flex flex-wrap gap-2">
                       {Array.isArray(techTags) && techTags.map((t, idx) => (
                         <span key={idx} className="text-[9px] font-black bg-white border border-zinc-200 px-2.5 py-1 rounded-md uppercase text-zinc-600 shadow-sm antialiased">{t}</span>

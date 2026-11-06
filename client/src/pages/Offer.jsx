@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import NotFound from "./NotFound";
-import { ArrowLeft, ExternalLink, Globe, Mail, User, Phone } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Globe, Github, Linkedin, Mail, User, Phone } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
+import MarkdownDescription from "../components/offers/MarkdownDescription";
 import { parseLinks, parseTechTags } from "../utils/parseJsonField";
 import { isSafeHttpUrl } from "../utils/safeUrl";
 
@@ -13,27 +12,36 @@ const Offer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user: loggedInUser } = useAuth();
-  const [offer, setOffer] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showPhone, setShowPhone] = useState(false);
+  const [offerResult, setOfferResult] = useState({ id: null, offer: null, error: null });
+  const [revealedPhoneOfferId, setRevealedPhoneOfferId] = useState(null);
+
+  const currentOfferResult = offerResult.id === id ? offerResult : null;
+  const offer = currentOfferResult?.offer;
+  const error = currentOfferResult?.error;
+  const loading = !currentOfferResult;
+  const showPhone = revealedPhoneOfferId === id;
 
   const isOwner = loggedInUser && String(loggedInUser.id) === String(offer?.user_id);
   const isAdmin = loggedInUser && String(loggedInUser.role).toLowerCase() === "admin";
 
   useEffect(() => {
-    setLoading(true);
+    let isCurrent = true;
+
     api.get(`/offer/getOffer/${id}`)
       .then(res => {
         const data = res.data.message;
-        if (Array.isArray(data) && data.length > 0) {
-          setOffer(data[0]);
-        } else {
-          setOffer(null);
-        }
+        const offerData = Array.isArray(data) && data.length > 0 ? data[0] : null;
+        if (isCurrent) setOfferResult({ id, offer: offerData, error: null });
       })
-      .catch(() => setError('Nie udało się załadować oferty'))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (isCurrent) {
+          setOfferResult({ id, offer: null, error: 'Nie udało się załadować oferty' });
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
   }, [id]);
 
   if (loading) return <div className="max-w-4xl mx-auto px-6 py-20 text-black font-bold uppercase tracking-widest">Wczytywanie...</div>;
@@ -50,79 +58,77 @@ const Offer = () => {
   const links = parseLinks(offer.links);
 
   return (
-    <div className="w-full min-h-screen font-sans antialiased text-[#18181b] bg-white/30 backdrop-blur-sm">
+    <div className="w-full min-h-screen bg-zinc-50 font-sans antialiased text-zinc-900">
       <div className="max-w-5xl mx-auto px-8 py-12">
         
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-black/60 hover:text-black transition-colors mb-12 cursor-pointer"
+          className="mb-8 inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-zinc-500 transition-colors hover:bg-white hover:text-zinc-950 cursor-pointer"
         >
           <ArrowLeft size={18} />
-          <span className="text-sm font-bold uppercase tracking-wider">Wróć</span>
+          <span>Wróć</span>
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           
-          <div className="lg:col-span-8 space-y-8">
-            <header className="flex items-center gap-6 p-8 bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-sm">
-              <div className="w-20 h-20 bg-white rounded-2xl shrink-0 flex items-center justify-center shadow-lg overflow-hidden border border-black/5">
-                {offer.photo ? (
-                  <img 
-                    src={offer.photo} 
-                    alt={offer.company} 
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User size={32} className="text-black" />
-                )}
+          <div className="space-y-6 lg:col-span-8">
+            <header className="rounded-2xl border border-zinc-200 bg-white p-7 shadow-sm sm:p-8">
+              <div className="flex items-center gap-5">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 sm:h-20 sm:w-20">
+                  {offer.photo ? (
+                    <img
+                      src={offer.photo}
+                      alt={offer.company}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={32} className="text-black" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1 className="break-words text-xl font-bold leading-tight tracking-tight text-zinc-950 sm:text-2xl">{offer.title}</h1>
+                  {offer.company && <p className="mt-1 text-base font-medium text-zinc-500">{offer.company}</p>}
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-black">{offer.title}</h1>
-                <p className="text-zinc-600 text-lg font-medium">{offer.company}</p>
-              </div>
+              {techTags.length > 0 && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {techTags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </header>
 
-            <section className="p-8 bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-sm">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-black mb-6">
+            <section className="rounded-2xl border border-zinc-200 bg-white p-7 shadow-sm sm:p-8">
+              <h2 className="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
                 Opis stanowiska
               </h2>
-              <div className="prose prose-zinc max-w-none text-[17px] prose-a:text-blue-700 prose-img:rounded-xl">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <div className="prose prose-base prose-zinc max-w-none text-base leading-7 prose-p:my-4 prose-li:my-1 prose-a:font-medium prose-a:text-blue-700 prose-img:my-5 prose-img:max-h-96 prose-img:rounded-xl">
+                <MarkdownDescription>
                   {offer.description || ""}
-                </ReactMarkdown>
-              </div>
-            </section>
-
-            <section className="p-8 bg-white/60 backdrop-blur-md border border-white/40 rounded-3xl shadow-sm">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-black mb-6">
-                Stack Technologiczny
-              </h2>
-              <div className="flex flex-wrap gap-3">
-                {techTags.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="px-5 py-2.5 bg-black text-white text-[11px] font-bold rounded-xl uppercase tracking-widest"
-                  >
-                    {tag}
-                  </span>
-                ))}
+                </MarkdownDescription>
               </div>
             </section>
           </div>
 
           <div className="lg:col-span-4">
-            <aside className="sticky top-12 space-y-6">
-              <div className="p-8 border border-white/40 rounded-3xl bg-white/60 backdrop-blur-md shadow-sm">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-black mb-8 border-b border-black/5 pb-2">
+            <aside className="sticky top-8 space-y-4">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
+                <h3 className="mb-5 border-b border-zinc-100 pb-3 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
                   Ogłoszeniodawca
                 </h3>
                 
                 <Link 
                   to={`/profile/${offer.user_id}`} 
-                  className="flex items-center gap-4 mb-8 group cursor-pointer"
+                  className="group mb-5 flex items-center gap-3 cursor-pointer"
                 >
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-black/10 shadow-sm overflow-hidden">
+                  <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-zinc-200 bg-zinc-50">
                     {offer.photo ? (
                       <img 
                         src={offer.photo} 
@@ -135,31 +141,42 @@ const Offer = () => {
                     )}
                   </div>
                   <div>
-                    <p className="text-[16px] font-bold text-black decoration-zinc-300 underline-offset-4">
+                    <p className="text-sm font-bold text-zinc-900 underline-offset-4 group-hover:underline">
                       {offer.name} {offer.surname}
                     </p>
-                    <p className="text-xs text-zinc-500 font-medium">Zobacz profil</p>
+                    <p className="mt-0.5 text-xs font-medium text-zinc-500">Zobacz profil</p>
                   </div>
                 </Link>
 
-                <div className="flex flex-col gap-2">
-                  {Object.entries(links).filter(([, url]) => isSafeHttpUrl(url)).map(([name, url]) => (
-                    <a 
-                      key={name}
-                      href={url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between text-zinc-600 hover:text-black text-sm font-semibold p-3 rounded-xl hover:bg-white/80 transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Globe size={16} />
-                        <span className="capitalize">{name}</span>
-                      </div>
-                      <ExternalLink size={14} className="opacity-40" />
-                    </a>
-                  ))}
+                <div className="flex flex-col gap-1">
+                  {Object.entries(links)
+                    .filter(([, url]) => isSafeHttpUrl(url))
+                    .map(([name, url]) => {
+                      const normalizedName = name.toLowerCase();
+                      const LinkIcon = normalizedName === "github"
+                        ? Github
+                        : normalizedName === "linkedin"
+                          ? Linkedin
+                          : Globe;
+
+                      return (
+                        <a
+                          key={name}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-950"
+                        >
+                          <div className="flex items-center gap-3">
+                            <LinkIcon size={16} />
+                            <span className="capitalize">{name}</span>
+                          </div>
+                          <ExternalLink size={14} className="opacity-40" />
+                        </a>
+                      );
+                    })}
                   
-                  <a href={`mailto:${offer.email}`} className="flex items-center justify-between text-zinc-600 hover:text-black text-sm font-semibold p-3 rounded-xl hover:bg-white/80 transition-all">
+                  <a href={`mailto:${offer.email}`} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-950">
                     <div className="flex items-center gap-3">
                       <Mail size={16} />
                       <span>Email</span>
@@ -171,8 +188,8 @@ const Offer = () => {
                     <div className="select-text">
                       {!showPhone ? (
                         <button 
-                          onClick={() => setShowPhone(true)}
-                          className="w-full flex items-center justify-between text-zinc-600 hover:text-black text-sm font-semibold p-3 rounded-xl hover:bg-white/80 transition-all cursor-pointer"
+                          onClick={() => setRevealedPhoneOfferId(id)}
+                          className="w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-950 cursor-pointer"
                         >
                           <div className="flex items-center gap-3">
                             <Phone size={16} />
@@ -181,7 +198,7 @@ const Offer = () => {
                           <span className="text-[10px] uppercase tracking-tighter opacity-40 ">Pokaż</span>
                         </button>
                       ) : (
-                        <div className="flex items-center gap-3 text-black text-sm font-semibold p-3">
+                        <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600">
                           <Phone size={16} />
                           <span className="select-all cursor-text">{offer.phone}</span>
                         </div>
@@ -194,14 +211,14 @@ const Offer = () => {
               {isOwner || isAdmin ? (
                 <Link 
                   to={`/editOffer/${id}`}
-                  className="w-full bg-black text-white text-[13px] font-bold uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-zinc-800 transition-all text-center flex items-center justify-center shadow-xl cursor-pointer"
+                  className="flex w-full items-center justify-center rounded-xl bg-zinc-950 py-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-zinc-800 cursor-pointer"
                 >
                   Edytuj ogłoszenie
                 </Link>
               ) : (
                 <a 
                   href={`mailto:${offer.email}?subject=Aplikacja: ${offer.title}`}
-                  className="w-full bg-black text-white text-[13px] font-bold uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-zinc-800 transition-all text-center flex items-center justify-center shadow-xl"
+                  className="flex w-full items-center justify-center rounded-xl bg-zinc-950 py-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-zinc-800"
                 >
                   Aplikuj Teraz
                 </a>
