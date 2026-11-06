@@ -15,6 +15,8 @@ import {
   X,
   FileText,
   Download,
+  Upload,
+  ChevronDown,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import formatUpdater from '../utils/DateFormatter';
@@ -23,7 +25,7 @@ import { getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
 import { parseCvUpload } from "../utils/parseCvUpload";
 import { parseTechTags } from "../utils/parseJsonField";
 import { isValidEmail } from "../utils/validation";
-import { assertImageFile } from "../utils/fileUpload";
+import { assertImageFile, assertPdfFile } from "../utils/fileUpload";
 import { isSafeHttpUrl } from "../utils/safeUrl";
 import MarkdownDescription from "../components/offers/MarkdownDescription";
 import MarkdownCheatsheet from "../components/MarkdownCheatsheet";
@@ -39,10 +41,13 @@ const Profile = () => {
   const [isCvOpen, setIsCvOpen] = useState(false);
   const [descriptionTab, setDescriptionTab] = useState("edit");
   const [savedCv, setSavedCv] = useState(null);
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editForm, setEditForm] = useState({ email: "", phone: "", description: "" });
   const fileInputRef = useRef(null);
   const pdfInputRef = useRef(null);
+  const cvUploadInputRef = useRef(null);
+  const cvMenuRef = useRef(null);
 
   const isOwner = loggedInUser && String(loggedInUser.id) === String(id);
   const isAdmin = loggedInUser && String(loggedInUser.role).toLowerCase() === "admin";
@@ -97,6 +102,19 @@ const Profile = () => {
   useEffect(() => {
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    const closeCvMenu = (event) => {
+      if (!cvMenuRef.current?.contains(event.target)) {
+        cvMenuRef.current.open = false;
+      }
+    };
+
+    document.addEventListener("pointerdown", closeCvMenu);
+    return () => {
+      document.removeEventListener("pointerdown", closeCvMenu);
+    };
+  }, []);
 
 const handleUpdateProfile = async () => {
     if (!canSave) return;
@@ -178,6 +196,60 @@ const handleUpdateProfile = async () => {
     }
   };
 
+  const handleCvUpload = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const invalid = assertPdfFile(file);
+    if (invalid) {
+      toast.error(invalid);
+      return;
+    }
+
+    const data = new FormData();
+    data.append("cvFile", file);
+    setIsUploadingCv(true);
+    const uploadToast = toast.loading("Wgrywanie CV...");
+
+    try {
+      const response = await api.post("/upload/uploadcv", data);
+      const cvUrl = response.data?.cvUrl;
+      if (!cvUrl) {
+        throw new Error("Serwer nie zwrócił adresu wgranego CV");
+      }
+
+      const meta = {
+        url: response.data?.cvUrlDowload || cvUrl,
+        savedAt: Date.now(),
+      };
+      setSavedCvMeta(id, meta);
+      setSavedCv(meta);
+      setProfile((currentProfile) => ({ ...currentProfile, cv_url: cvUrl }));
+      if (isOwner) {
+        setUser({ ...loggedInUser, cv_url: cvUrl });
+      }
+      toast.success(response.data?.message || "CV zapisane na profilu", {
+        id: uploadToast,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || error.message || "Nie udało się wgrać CV",
+        { id: uploadToast },
+      );
+    } finally {
+      setIsUploadingCv(false);
+    }
+  };
+
+  const handleCvSaved = (meta) => {
+    setSavedCv(meta);
+    if (isOwner && meta?.url) {
+      setUser({ ...loggedInUser, cv_url: meta.url });
+      setProfile((currentProfile) => ({ ...currentProfile, cv_url: meta.url }));
+    }
+  };
+
   if (loading)
     return (
       <div className="flex items-center justify-center py-20 font-black uppercase italic tracking-widest text-zinc-900">
@@ -197,6 +269,7 @@ const handleUpdateProfile = async () => {
     <div className="text-zinc-950 pb-24 relative z-10 overflow-x-hidden">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoUpload} />
       <input type="file" ref={pdfInputRef} className="hidden" accept=".pdf" onChange={handlePdfUpload} />
+      <input type="file" ref={cvUploadInputRef} className="hidden" accept="application/pdf,.pdf" onChange={handleCvUpload} />
 
       <div className="relative h-48 bg-white/10 border-b border-zinc-200 backdrop-blur-sm">
         <div className="absolute -bottom-16 left-6 md:left-16 lg:left-32">
@@ -280,27 +353,56 @@ const handleUpdateProfile = async () => {
                   <button 
                     onClick={() => pdfInputRef.current.click()}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 bg-white border border-zinc-200 text-zinc-700 px-4 py-2.5 rounded-xl font-bold transition-colors shadow-sm cursor-pointer hover:bg-zinc-50"
+                    className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 font-bold text-violet-800 shadow-sm transition-colors hover:bg-violet-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <FileText className="w-4 h-4" /> Wczytaj dane z CV
+                    <FileText className="w-4 h-4" /> Uzupełnij dane z CV
                   </button>
                 </>
               ) : (
                 <>
                   {isOwner && (
-                    <button
-                      onClick={() => setIsCvOpen(true)}
-                      className="flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-900 px-4 py-2.5 rounded-xl font-bold hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
-                    >
-                      <FileText className="w-5 h-5 shrink-0" />
-                      {savedCv ? "Edytuj CV" : "Stwórz CV"}
-                    </button>
+                    <details ref={cvMenuRef} className="relative">
+                      <summary className="flex list-none cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 font-bold text-zinc-900 shadow-sm transition-colors hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">
+                        <FileText className="h-5 w-5 shrink-0" />
+                        CV
+                        <ChevronDown className="h-4 w-4 text-zinc-500" />
+                      </summary>
+                      <div className="absolute right-0 top-full z-30 mt-2 flex w-56 flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.currentTarget.closest("details").open = false;
+                            setIsCvOpen(true);
+                          }}
+                          className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
+                        >
+                          <FileText className="h-4 w-4 text-zinc-500" />
+                          Stwórz CV
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isUploadingCv}
+                          onClick={(event) => {
+                            event.currentTarget.closest("details").open = false;
+                            cvUploadInputRef.current?.click();
+                          }}
+                          className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Upload className="h-4 w-4 text-zinc-500" />
+                          {isUploadingCv
+                            ? "Wgrywanie..."
+                            : savedCv
+                              ? "Zmień plik PDF"
+                              : "Wgraj plik PDF"}
+                        </button>
+                      </div>
+                    </details>
                   )}
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center justify-center bg-zinc-950 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-zinc-800 transition-colors shadow-sm cursor-pointer"
+                    className="flex cursor-pointer items-center justify-center rounded-xl bg-zinc-950 px-4 py-2.5 font-bold text-white shadow-sm transition-colors hover:bg-zinc-800"
                   >
-                    Edytuj Profil
+                    Edytuj profil
                   </button>
                 </>
               )}
@@ -336,7 +438,7 @@ const handleUpdateProfile = async () => {
               className="flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-zinc-800"
             >
               <Download className="h-4 w-4 shrink-0" />
-              {isOwner ? "Pobierz CV" : "Pobierz CV"}
+              Pobierz CV
             </a>
           )}
         </nav>
@@ -475,7 +577,7 @@ const handleUpdateProfile = async () => {
         <CvBuilder
           profile={profile}
           onClose={() => setIsCvOpen(false)}
-          onSaved={(meta) => setSavedCv(meta)}
+          onSaved={handleCvSaved}
         />
       )}
     </div>
