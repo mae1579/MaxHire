@@ -49,7 +49,7 @@ const buildInitialForm = (profile) => ({
   github: "",
   linkedin: "",
   photo: profile?.photo || "",
-  summary: "",
+  summary: profile?.description || "",
   availability: "",
   skills: "",
   experience: [emptyJob()],
@@ -124,6 +124,7 @@ const CvBuilder = ({ profile, onClose, onSaved }) => {
       return {
         ...initial,
         ...parsed,
+        summary: parsed.summary || initial.summary,
         experience: parsed.experience?.length ? parsed.experience : initial.experience,
         education: parsed.education?.length ? parsed.education : initial.education,
         projects: parsed.projects?.length ? parsed.projects : initial.projects,

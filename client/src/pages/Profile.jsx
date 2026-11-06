@@ -25,6 +25,8 @@ import { parseTechTags } from "../utils/parseJsonField";
 import { isValidEmail } from "../utils/validation";
 import { assertImageFile } from "../utils/fileUpload";
 import { isSafeHttpUrl } from "../utils/safeUrl";
+import MarkdownDescription from "../components/offers/MarkdownDescription";
+import MarkdownCheatsheet from "../components/MarkdownCheatsheet";
 import NotFound from "./NotFound";
 
 const Profile = () => {
@@ -35,9 +37,10 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isCvOpen, setIsCvOpen] = useState(false);
+  const [descriptionTab, setDescriptionTab] = useState("edit");
   const [savedCv, setSavedCv] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editForm, setEditForm] = useState({ email: "", phone: "" });
+  const [editForm, setEditForm] = useState({ email: "", phone: "", description: "" });
   const fileInputRef = useRef(null);
   const pdfInputRef = useRef(null);
 
@@ -45,8 +48,14 @@ const Profile = () => {
   const isAdmin = loggedInUser && String(loggedInUser.role).toLowerCase() === "admin";
 
   const isEmailValid = isValidEmail(editForm.email);
-  const isPhoneValid = /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(editForm.phone);
-  const canSave = isEmailValid && isPhoneValid && !isSubmitting;
+  const isPhoneValid =
+    !editForm.phone.trim() ||
+    /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s./0-9]*$/.test(editForm.phone);
+  const canSave =
+    isEmailValid &&
+    isPhoneValid &&
+    editForm.description.length <= 255 &&
+    !isSubmitting;
 
   const fetchData = async () => {
     try {
@@ -59,7 +68,11 @@ const Profile = () => {
       if (profileRes.data.message && profileRes.data.message.length > 0) {
         const userData = profileRes.data.message[0];
         setProfile(userData);
-        setEditForm({ email: userData.email, phone: userData.phone || "" });
+        setEditForm({
+          email: userData.email,
+          phone: userData.phone || "",
+          description: userData.description || "",
+        });
         const fromProfile = pickCvUrl(userData);
         const fromLocal = getSavedCvMeta(id);
         const url = fromProfile || fromLocal?.url || "";
@@ -93,10 +106,20 @@ const handleUpdateProfile = async () => {
         await api.patch(`/admin/update/user/${id}`, editForm)
         : await api.patch(`/edit/user/${id}`, editForm)
       
-      const updated = { ...profile, email: editForm.email, phone: editForm.phone };
+      const updated = {
+        ...profile,
+        email: editForm.email,
+        phone: editForm.phone,
+        description: editForm.description.trim() || null,
+      };
       setProfile(updated); 
       if (isOwner) {
-        const userToUpdate = { ...loggedInUser, email: editForm.email, phone: editForm.phone };
+        const userToUpdate = {
+          ...loggedInUser,
+          email: editForm.email,
+          phone: editForm.phone,
+          description: editForm.description.trim() || null,
+        };
         setUser(userToUpdate);
       }
       setIsEditing(false);
@@ -144,6 +167,7 @@ const handleUpdateProfile = async () => {
       const parsed = await parseCvUpload(file);
       if (parsed) {
         setEditForm({
+          ...editForm,
           email: parsed.email || editForm.email,
           phone: parsed.phone || editForm.phone,
         });
@@ -227,24 +251,7 @@ const handleUpdateProfile = async () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            {savedCv && !isEditing && (
-              <a
-                href={isSafeHttpUrl(savedCv.url) ? savedCv.url : undefined}
-                onClick={(e) => {
-                  if (isSafeHttpUrl(savedCv.url)) return;
-                  e.preventDefault();
-                  if (isOwner) setIsCvOpen(true);
-                  else toast.error("CV nie ma jeszcze publicznego linku");
-                }}
-                target={isSafeHttpUrl(savedCv.url) ? "_blank" : undefined}
-                rel={isSafeHttpUrl(savedCv.url) ? "noreferrer" : undefined}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-900 px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-50 transition-all shadow-sm active:scale-95 cursor-pointer"
-              >
-                <Download className="w-5 h-5 shrink-0" />
-                {isOwner ? "Twoje CV" : "Pobierz CV"}
-              </a>
-            )}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
           {(isOwner || isAdmin) && (
               <>
               {isEditing ? (
@@ -252,23 +259,30 @@ const handleUpdateProfile = async () => {
                   <button 
                     onClick={handleUpdateProfile} 
                     disabled={!canSave}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase tracking-tighter transition-all shadow-lg active:scale-95 cursor-pointer ${canSave ? 'bg-zinc-950 text-white hover:bg-zinc-800' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'}`}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold transition-colors shadow-sm ${canSave ? 'bg-zinc-950 text-white hover:bg-zinc-800 cursor-pointer' : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'}`}
                   >
                     {isSubmitting ? "Czekaj..." : <><Check className="w-5 h-5" /> Zapisz</>}
                   </button>
                   <button 
-                    onClick={() => { setIsEditing(false); setEditForm({ email: profile.email, phone: profile.phone || "" }); }} 
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditForm({
+                        email: profile.email,
+                        phone: profile.phone || "",
+                        description: profile.description || "",
+                      });
+                    }}
                     disabled={isSubmitting} 
-                    className={`flex items-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 py-3 rounded-xl font-bold transition-all shadow-sm uppercase text-xs cursor-pointer ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white'}`}
+                    className={`flex items-center gap-2 bg-white border border-zinc-200 text-zinc-700 px-4 py-2.5 rounded-xl font-bold transition-colors shadow-sm ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-zinc-50 cursor-pointer'}`}
                   >
                     <X className="w-4 h-4" /> Anuluj
                   </button>
                   <button 
                     onClick={() => pdfInputRef.current.click()}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 bg-red-500 text-white px-4 py-3 rounded-xl font-bold transition-all shadow-sm uppercase text-xs cursor-pointer hover:bg-red-600 active:scale-95"
+                    className="flex items-center gap-2 bg-white border border-zinc-200 text-zinc-700 px-4 py-2.5 rounded-xl font-bold transition-colors shadow-sm cursor-pointer hover:bg-zinc-50"
                   >
-                    <FileText className="w-4 h-4" /> Użyj CV
+                    <FileText className="w-4 h-4" /> Wczytaj dane z CV
                   </button>
                 </>
               ) : (
@@ -276,7 +290,7 @@ const handleUpdateProfile = async () => {
                   {isOwner && (
                     <button
                       onClick={() => setIsCvOpen(true)}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-zinc-100 border border-zinc-200 text-zinc-900 px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-white transition-all shadow-sm active:scale-95 cursor-pointer"
+                      className="flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-900 px-4 py-2.5 rounded-xl font-bold hover:bg-zinc-50 transition-colors shadow-sm cursor-pointer"
                     >
                       <FileText className="w-5 h-5 shrink-0" />
                       {savedCv ? "Edytuj CV" : "Stwórz CV"}
@@ -284,7 +298,7 @@ const handleUpdateProfile = async () => {
                   )}
                   <button 
                     onClick={() => setIsEditing(true)}
-                    className="flex-1 sm:flex-none bg-zinc-950 text-white px-4 sm:px-8 py-3 rounded-xl font-black uppercase tracking-tighter hover:bg-zinc-800 transition-all shadow-lg active:scale-95 cursor-pointer"
+                    className="flex items-center justify-center bg-zinc-950 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-zinc-800 transition-colors shadow-sm cursor-pointer"
                   >
                     Edytuj Profil
                   </button>
@@ -295,9 +309,111 @@ const handleUpdateProfile = async () => {
           </div>
         </div>
 
-        <div className="h-px bg-zinc-200 my-12 w-full"></div>
+        <nav aria-label="Sekcje profilu" className="flex flex-wrap gap-2 mt-8">
+          <a
+            href="#profile-description"
+            className="px-4 py-2 rounded-full border border-zinc-200 bg-white text-sm font-semibold text-zinc-700 hover:border-zinc-400 hover:text-zinc-950 transition-colors"
+          >
+            Opis
+          </a>
+          <a
+            href="#profile-offers"
+            className="px-4 py-2 rounded-full border border-zinc-200 bg-white text-sm font-semibold text-zinc-700 hover:border-zinc-400 hover:text-zinc-950 transition-colors"
+          >
+            Oferty ({offers.length})
+          </a>
+          {savedCv && !isEditing && (
+            <a
+              href={isSafeHttpUrl(savedCv.url) ? savedCv.url : undefined}
+              onClick={(e) => {
+                if (isSafeHttpUrl(savedCv.url)) return;
+                e.preventDefault();
+                if (isOwner) setIsCvOpen(true);
+                else toast.error("CV nie ma jeszcze publicznego linku");
+              }}
+              target={isSafeHttpUrl(savedCv.url) ? "_blank" : undefined}
+              rel={isSafeHttpUrl(savedCv.url) ? "noreferrer" : undefined}
+              className="flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-zinc-800"
+            >
+              <Download className="h-4 w-4 shrink-0" />
+              {isOwner ? "Pobierz CV" : "Pobierz CV"}
+            </a>
+          )}
+        </nav>
 
-        <section>
+        <div className="h-px bg-zinc-200 my-8 w-full"></div>
+
+        <section id="profile-description" className="scroll-mt-8 mb-10">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 className="text-xl font-bold text-zinc-900">O mnie</h2>
+            {isEditing && (
+              <span
+                className={`text-xs font-medium ${editForm.description.length > 255 ? "text-red-600" : "text-zinc-500"}`}
+              >
+                {editForm.description.length}/255
+              </span>
+            )}
+          </div>
+          {isEditing ? (
+            <>
+              <div className="mb-3 inline-flex rounded-lg bg-zinc-100 p-1" role="tablist" aria-label="Tryb edycji opisu profilu">
+                {[
+                  ["edit", "Edytuj"],
+                  ["preview", "Podgląd"],
+                ].map(([tab, label]) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={descriptionTab === tab}
+                    onClick={() => setDescriptionTab(tab)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                      descriptionTab === tab
+                        ? "bg-white text-zinc-950 shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-800"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {descriptionTab === "edit" ? (
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  maxLength={255}
+                  disabled={isSubmitting}
+                  rows={4}
+                  placeholder="Napisz kilka zdań o sobie..."
+                  aria-label="Opis profilu"
+                  className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-4 text-sm leading-relaxed text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:border-zinc-500 disabled:opacity-60"
+                />
+              ) : (
+                <div
+                  role="tabpanel"
+                  className="prose prose-sm prose-zinc min-h-28 max-w-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm leading-6 prose-p:my-3 prose-li:my-0 prose-a:text-blue-700 prose-img:my-4 prose-img:max-h-64 prose-img:rounded-xl"
+                >
+                  {editForm.description.trim() ? (
+                    <MarkdownDescription>{editForm.description}</MarkdownDescription>
+                  ) : (
+                    <p className="m-0 text-zinc-400">Podgląd formatowania pojawi się tutaj.</p>
+                  )}
+                </div>
+              )}
+              <MarkdownCheatsheet />
+            </>
+          ) : (
+            profile.description ? (
+              <div className="prose prose-sm prose-zinc max-w-4xl leading-relaxed prose-p:my-3 prose-li:my-0 prose-a:text-blue-700 prose-img:my-4 prose-img:max-h-64 prose-img:rounded-xl">
+                <MarkdownDescription>{profile.description}</MarkdownDescription>
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed text-zinc-500">Brak opisu.</p>
+            )
+          )}
+        </section>
+
+        <section id="profile-offers" className="scroll-mt-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <Briefcase className="w-6 h-6 text-zinc-400" />

@@ -83,13 +83,22 @@ editUserRouter.patch("/:id", tokenAuth, async (req, res) => {
 
   finduser.email = req.body.email ?? finduser.email;
   finduser.phone = req.body.phone ?? finduser.phone;
-
-  try {
-    await finduser.update();
-    res.status(200).json({ message: "Dane profilowe zostały zaaktualizowane" });
-  } catch (error) {
-    res.status(400).json({ message: "Błąd aktualizacji" });
+  if (req.body.description !== undefined) {
+    if (
+      typeof req.body.description !== "string" ||
+      req.body.description.length > 255
+    ) {
+      throw new ValidationError("Opis profilu może mieć maksymalnie 255 znaków");
+    }
+    finduser.description = req.body.description.trim() || null;
   }
+
+  await UserRecord.updateProfileDetails(finduser.id, {
+    email: finduser.email,
+    phone: finduser.phone,
+    description: finduser.description,
+  });
+  res.status(200).json({ message: "Dane profilowe zostały zaaktualizowane" });
 });
 
 module.exports = {

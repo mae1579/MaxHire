@@ -14,6 +14,7 @@ class UserRecord {
       phone,
       photo,
       cv_url,
+      description,
     } = obj;
 
     this.id = id ?? uuid();
@@ -25,8 +26,16 @@ class UserRecord {
     this.phone = phone ? phone : null;
     this.photo = photo ? photo : null;
     this.cv_url = cv_url ? cv_url : null;
+    this.description = description ? description : null;
 
     // Wykonac walidację pól !
+
+    if (
+      this.description !== null &&
+      (typeof this.description !== "string" || this.description.length > 255)
+    ) {
+      throw new ValidationError("Opis profilu może mieć maksymalnie 255 znaków");
+    }
 
     if (!this.email.includes("@")) {
       throw new ValidationError("Email musi zawierać znak @");
@@ -52,7 +61,7 @@ class UserRecord {
 
   async update() {
     await pool.execute(
-      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo, `cv_url`=:cv_url  WHERE `id`=:id",
+      "UPDATE `users` SET `id` =  :id, `email` = :email, `password`= :password, `role` = :role, `name` = :name, `surname`= :surname, `phone`=:phone, `photo`=:photo, `cv_url`=:cv_url, `description`=:description  WHERE `id`=:id",
       {
         id: this.id,
         email: this.email,
@@ -63,7 +72,15 @@ class UserRecord {
         phone: this.phone,
         photo: this.photo,
         cv_url: this.cv_url,
+        description: this.description,
       },
+    );
+  }
+
+  static async updateProfileDetails(userid, { email, phone, description }) {
+    await pool.execute(
+      "UPDATE `users` SET `email` = :email, `phone` = :phone, `description` = :description WHERE `id` = :id",
+      { id: userid, email, phone, description },
     );
   }
 
@@ -115,7 +132,7 @@ class UserRecord {
 
   static async getOneUser(user_id) {
     const [data] = await pool.execute(
-      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `users`.`role`, `users`.`cv_url` FROM `users` WHERE `users`.`id` = :id",
+      "SELECT `users`.`id`, `users`.`email`, `users`.`name`, `users`.`surname`, `users`.`phone`, `users`.`photo`, `users`.`role`, `users`.`cv_url`, `users`.`description` FROM `users` WHERE `users`.`id` = :id",
 
       {
         id: user_id,
