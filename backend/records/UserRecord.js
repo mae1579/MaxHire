@@ -34,7 +34,9 @@ class UserRecord {
       this.description !== null &&
       (typeof this.description !== "string" || this.description.length > 255)
     ) {
-      throw new ValidationError("Opis profilu może mieć maksymalnie 255 znaków");
+      throw new ValidationError(
+        "Opis profilu może mieć maksymalnie 255 znaków",
+      );
     }
 
     if (!this.email.includes("@")) {
@@ -103,6 +105,11 @@ class UserRecord {
 
   async delete() {
     await pool.execute("DELETE FROM `users` WHERE `id` = :id", {
+      id: this.id,
+    });
+  }
+  async deleteUserCv() {
+    await pool.execute("UPDATE `users` SET `cv_url` = NULL WHERE `id` = :id", {
       id: this.id,
     });
   }
