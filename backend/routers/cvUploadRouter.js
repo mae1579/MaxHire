@@ -4,6 +4,7 @@ const multer = require("multer");
 const { UserRecord } = require("../records/UserRecord");
 const { ValidationError } = require("../utils/handleErrors");
 const { cvStorage } = require("../utils/cloudinaryConfig");
+const authorizeRoles = require("../guards/authorizeRoles");
 const cloudinary = require("cloudinary").v2;
 
 // Upload cv na serwer.
@@ -14,6 +15,50 @@ const cloudinary = require("cloudinary").v2;
 // Jesli chcesz podglad:
 // usuwasz cvUrl = cvUrl.replace("/upload/", "/upload/fl_attachment/");
 const cvUploadRouter = express.Router();
+
+//Usuwanie cv przez admina
+cvUploadRouter.delete(
+  "/admin/removeUserCv/:user_id",
+  tokenAuth,
+  authorizeRoles(["admin"]),
+  async (req, res) => {
+    try {
+      const findUser = await UserRecord.findById(req.params.user_id);
+      console.log(req.params.user_id);
+
+      if (!findUser || !findUser.cv_url) {
+        throw new ValidationError("Użytkownik nie posiada zapisanego CV.");
+      }
+
+      const cvUrl = findUser.cv_url;
+
+      const match = cvUrl.match(/\/v\d+\/(.+)\.pdf$/i);
+
+      if (!match) {
+        throw new ValidationError(
+          "Nie udało się odczytać identyfikatora pliku z linku.",
+        );
+      }
+
+      const publicId = match[1];
+
+      await cloudinary.uploader.destroy(publicId);
+
+      await findUser.deleteUserCv();
+      res.status(200).json({
+        message: ` CV Usera: ${findUser.name} ${findUser.surname} został pomyślnie usunięty.`,
+      });
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        throw err;
+      }
+      res.status(500).json({
+        message: "Wystąpił błąd podczas usuwania CV.",
+        error: err.message,
+      });
+    }
+  },
+);
 
 //Usuwanie cv zalogowanego Usera
 cvUploadRouter.delete("/removeUserCv", tokenAuth, async (req, res) => {
