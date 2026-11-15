@@ -95,7 +95,7 @@ offersRouter.get("/matchedOffers", tokenAuth, async (req, res) => {
 
     // Zmieniamy na potężniejszy model, który rozumie logikę
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
       },
@@ -109,7 +109,7 @@ offersRouter.get("/matchedOffers", tokenAuth, async (req, res) => {
       description: o.description,
     }));
 
-    // PROMPT DLA WERSJI 2.5-FLASH: Inteligentny, rygorystyczny i krótki w odpowiedzi
+    // PROMPT DLA WERSJI 3.5-FLASH: Inteligentny, rygorystyczny i krótki w odpowiedzi
     const prompt = `
 Jesteś wybitnym i niezwykle rygorystycznym rekruterem IT. Przeanalizuj załączone CV (plik PDF) i absolutnie WSZYSTKIE poniższe oferty pracy:
 ${JSON.stringify(offersContext)}
@@ -138,7 +138,7 @@ Zwróć wynik WYŁĄCZNIE jako poprawną tablicę JSON:
 `;
 
     console.log(
-      `2. Wysyłanie zapytania do modelu gemini-2.5-flash (analiza ${allOffers.length} ofert)... To zajmie ok. 10-20 sekund.`,
+      `2. Wysyłanie zapytania do modelu gemini-3.5-flash (analiza ${allOffers.length} ofert)... To zajmie ok. 10-20 sekund.`,
     );
     const result = await model.generateContent([
       prompt,
