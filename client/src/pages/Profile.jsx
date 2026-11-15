@@ -428,7 +428,16 @@ const handleUpdateProfile = async () => {
             <a
               href={isSafeHttpUrl(savedCv.url) ? savedCv.url : undefined}
               onClick={(e) => {
-                if (isSafeHttpUrl(savedCv.url)) return;
+                if (isSafeHttpUrl(savedCv.url)) {
+                  e.preventDefault();
+                  const filename = `CV-${profile.name}-${profile.surname}.pdf`;
+                  const downloadUrl = savedCv.url.replace(
+                    "/upload/",
+                    `/upload/fl_attachment:${encodeURIComponent(filename.replace(".pdf", ""))}/`,
+                  );
+                  window.open(downloadUrl, "_blank", "noopener,noreferrer");
+                  return;
+                }
                 e.preventDefault();
                 if (isOwner) setIsCvOpen(true);
                 else toast.error("CV nie ma jeszcze publicznego linku");
