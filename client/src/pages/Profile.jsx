@@ -17,11 +17,12 @@ import {
   Download,
   Upload,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import formatUpdater from '../utils/DateFormatter';
 import CvBuilder from "../components/cv/CvBuilder";
-import { getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
+import { cvSavedKey, getSavedCvMeta, pickCvUrl, setSavedCvMeta } from "../utils/cvStorage";
 import { parseCvUpload } from "../utils/parseCvUpload";
 import { parseTechTags } from "../utils/parseJsonField";
 import { isValidEmail } from "../utils/validation";
@@ -42,6 +43,7 @@ const Profile = () => {
   const [descriptionTab, setDescriptionTab] = useState("edit");
   const [savedCv, setSavedCv] = useState(null);
   const [isUploadingCv, setIsUploadingCv] = useState(false);
+  const [isDeletingCv, setIsDeletingCv] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editForm, setEditForm] = useState({ email: "", phone: "", description: "" });
   const fileInputRef = useRef(null);
@@ -250,6 +252,37 @@ const handleUpdateProfile = async () => {
     }
   };
 
+  const handleCvDelete = async () => {
+    if (!profile.cv_url || isDeletingCv) return;
+    if (!window.confirm("Czy na pewno chcesz usunąć CV z profilu?")) return;
+
+    setIsDeletingCv(true);
+    const deleteToast = toast.loading("Usuwanie CV...");
+    try {
+      const endpoint = isOwner
+        ? "/upload/removeUserCv"
+        : `/upload/admin/removeUserCv/${id}`;
+      const response = await api.delete(endpoint);
+
+      localStorage.removeItem(cvSavedKey(id));
+      setSavedCv(null);
+      setProfile((currentProfile) => ({ ...currentProfile, cv_url: null }));
+      if (isOwner) {
+        setUser({ ...loggedInUser, cv_url: null });
+      }
+      toast.success(response.data?.message || "CV zostało usunięte", {
+        id: deleteToast,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Nie udało się usunąć CV",
+        { id: deleteToast },
+      );
+    } finally {
+      setIsDeletingCv(false);
+    }
+  };
+
   if (loading)
     return (
       <div className="flex items-center justify-center py-20 font-black uppercase italic tracking-widest text-zinc-900">
@@ -360,7 +393,7 @@ const handleUpdateProfile = async () => {
                 </>
               ) : (
                 <>
-                  {isOwner && (
+                  {(isOwner || (isAdmin && profile.cv_url)) && (
                     <details ref={cvMenuRef} className="relative">
                       <summary className="flex list-none cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 font-bold text-zinc-900 shadow-sm transition-colors hover:bg-zinc-50 [&::-webkit-details-marker]:hidden">
                         <FileText className="h-5 w-5 shrink-0" />
@@ -368,33 +401,51 @@ const handleUpdateProfile = async () => {
                         <ChevronDown className="h-4 w-4 text-zinc-500" />
                       </summary>
                       <div className="absolute right-0 top-full z-30 mt-2 flex w-56 flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-2 shadow-lg">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.currentTarget.closest("details").open = false;
-                            setIsCvOpen(true);
-                          }}
-                          className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                        >
-                          <FileText className="h-4 w-4 text-zinc-500" />
-                          Stwórz CV
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isUploadingCv}
-                          onClick={(event) => {
-                            event.currentTarget.closest("details").open = false;
-                            cvUploadInputRef.current?.click();
-                          }}
-                          className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <Upload className="h-4 w-4 text-zinc-500" />
-                          {isUploadingCv
-                            ? "Wgrywanie..."
-                            : savedCv
-                              ? "Zmień plik PDF"
-                              : "Wgraj plik PDF"}
-                        </button>
+                        {isOwner && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.currentTarget.closest("details").open = false;
+                                setIsCvOpen(true);
+                              }}
+                              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
+                            >
+                              <FileText className="h-4 w-4 text-zinc-500" />
+                              Stwórz CV
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isUploadingCv}
+                              onClick={(event) => {
+                                event.currentTarget.closest("details").open = false;
+                                cvUploadInputRef.current?.click();
+                              }}
+                              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Upload className="h-4 w-4 text-zinc-500" />
+                              {isUploadingCv
+                                ? "Wgrywanie..."
+                                : savedCv
+                                  ? "Zmień plik PDF"
+                                  : "Wgraj plik PDF"}
+                            </button>
+                          </>
+                        )}
+                        {profile.cv_url && (
+                          <button
+                            type="button"
+                            disabled={isDeletingCv}
+                            onClick={(event) => {
+                              event.currentTarget.closest("details").open = false;
+                              handleCvDelete();
+                            }}
+                            className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            {isDeletingCv ? "Usuwanie..." : "Usuń CV"}
+                          </button>
+                        )}
                       </div>
                     </details>
                   )}
