@@ -11,8 +11,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 offersRouter.get("/", tokenAuth, async (req, res) => {
   const search = req.query.search || "";
   const limit = 7;
-  const page = parseInt(req.query.page) || 1;
-  const offset = (parseInt(page) - 1) * limit;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const offset = (page - 1) * limit;
 
   const data = await OfferRecord.findAllFiltr(limit, offset, search);
 
@@ -95,7 +95,7 @@ offersRouter.get("/matchedOffers", tokenAuth, async (req, res) => {
 
     // Zmieniamy na potężniejszy model, który rozumie logikę
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
       },

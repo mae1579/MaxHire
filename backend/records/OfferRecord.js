@@ -54,11 +54,12 @@ class OfferRecord {
     );
   }
 
-  static async findAllGeminiData(){
-      const [data] = await pool.execute("SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`");
-      return data.length > 0 ? data.map((elem) => (elem)) : null;
+  static async findAllGeminiData() {
+    const [data] = await pool.execute(
+      "SELECT `users`.`photo`, `offers`.`id`, `offers`.`title`, `offers`.`company`, `offers`.`description`, `offers`.`tech`, `offers`.`links`, `offers`.`updated`, `offers`.`user_id` FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`",
+    );
+    return data.length > 0 ? data.map((elem) => elem) : null;
   }
-
 
   static async findAllFiltr(limit, offset, search) {
     let sql =
@@ -69,27 +70,70 @@ class OfferRecord {
       offset: offset.toString(),
     };
 
-    const searchCondition =
-      " WHERE (LOWER(`title`) LIKE :search OR LOWER(`company`) LIKE :search OR LOWER(`description`) LIKE :search OR LOWER(`tech`) LIKE :search)";
+    const countParams = {};
 
-    if (search) {
+    const cleanSearch = (search || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+
+    const escapeLike = (str) => str.replace(/[%_\\]/g, "\\$&");
+
+    const words = cleanSearch ? cleanSearch.split(" ").slice(0, 10) : [];
+
+    let searchCondition = "";
+
+    if (words.length > 0) {
+      const whereClauses = [];
+      const scoreParts = [];
+
+      const escapedFull = escapeLike(cleanSearch);
+      params.fullSearch = `%${escapedFull}%`;
+      params.startsWith = `${escapedFull}%`;
+
+      // Kolejność trafności: tytuł -> technologie -> nazwa firmy
+      scoreParts.push(
+        "(CASE WHEN LOWER(`offers`.`title`) LIKE :startsWith THEN 100 ELSE 0 END)",
+        "(CASE WHEN LOWER(`offers`.`title`) LIKE :fullSearch THEN 60 ELSE 0 END)",
+        "(CASE WHEN LOWER(`offers`.`tech`) LIKE :fullSearch THEN 40 ELSE 0 END)",
+        "(CASE WHEN LOWER(`offers`.`company`) LIKE :fullSearch THEN 30 ELSE 0 END)",
+      );
+
+      words.forEach((word, index) => {
+        const key = `word${index}`;
+        const value = `%${escapeLike(word)}%`;
+
+        params[key] = value;
+        countParams[key] = value;
+
+        whereClauses.push(
+          `(LOWER(\`offers\`.\`title\`) LIKE :${key} OR LOWER(\`offers\`.\`tech\`) LIKE :${key} OR LOWER(\`offers\`.\`company\`) LIKE :${key})`,
+        );
+
+        scoreParts.push(
+          `(CASE WHEN LOWER(\`offers\`.\`title\`) LIKE :${key} THEN 20 ELSE 0 END)`,
+          `(CASE WHEN LOWER(\`offers\`.\`tech\`) LIKE :${key} THEN 15 ELSE 0 END)`,
+          `(CASE WHEN LOWER(\`offers\`.\`company\`) LIKE :${key} THEN 10 ELSE 0 END)`,
+        );
+      });
+
+      searchCondition = ` WHERE ${whereClauses.join(" AND ")}`;
       sql += searchCondition;
-      params.search = `%${search.toLowerCase()}%`;
+      sql += ` ORDER BY (${scoreParts.join(" + ")}) DESC, \`offers\`.\`updated\` DESC LIMIT :limit OFFSET :offset`;
+    } else {
+      sql += " ORDER BY `offers`.`updated` DESC LIMIT :limit OFFSET :offset";
     }
-
-    sql += " ORDER BY `offers`.`updated` DESC LIMIT :limit OFFSET :offset";
 
     const [data] = await pool.execute(sql, params);
 
-    //let countsql = "SELECT COUNT(*) as total from `offers`";
     let countsql =
       "SELECT COUNT(*) as total FROM `users` INNER JOIN `offers` ON `users`.`id` = `offers`.`user_id`";
 
-    if (search) {
+    if (searchCondition) {
       countsql += searchCondition;
     }
 
-    const [countRows] = await pool.execute(countsql, params);
+    const [countRows] = await pool.execute(countsql, countParams);
 
     return {
       offers: data.map((el) => el),
@@ -108,7 +152,9 @@ class OfferRecord {
   }
 
   static async findAll() {
-    const [data] = await pool.execute("SELECT * FROM `offers` ORDER BY `updated` DESC");
+    const [data] = await pool.execute(
+      "SELECT * FROM `offers` ORDER BY `updated` DESC",
+    );
     return data.length > 0 ? data.map((elem) => new OfferRecord(elem)) : null;
   }
 
